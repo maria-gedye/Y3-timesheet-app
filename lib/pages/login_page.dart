@@ -1,16 +1,70 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:timesheet_app/components/my_textfield.dart';
 import 'package:timesheet_app/components/my_button.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
   LoginPage({super.key});
 
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
   // text editing controllers
-  final usernameController = TextEditingController();
+  final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
   // sign user in method
-  void signUserIn() {}
+  void signUserIn() async {
+    // show loading circle
+    showDialog(
+      context: context,
+      builder: (context) {
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+    );
+
+// try sign in
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: emailController.text,
+        password: passwordController.text,
+      );
+
+      // pop the loading circle once signed in
+      if (mounted) {
+        Navigator.pop(context);
+      }
+    } on FirebaseAuthException catch (e) {
+      Navigator.pop(context);
+      /*        print('Failed with error code: ${e.code}');
+        print(e.message); */
+      // wrong email or password
+      if (e.code == 'INVALID_LOGIN_CREDENTIALS') {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return const AlertDialog(
+              title: Text('Incorrect email or password'),
+            );
+          },
+        );
+      } else {
+        print(e.message); // for other errors
+        showDialog(
+          context: context,
+          builder: (context) {
+            return const AlertDialog(
+              title: Text('system error. restart the app'),
+            );
+          },
+        );
+      }
+    } // end of FirebaseAuthException catch
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,9 +74,8 @@ class LoginPage extends StatelessWidget {
             child: Center(
                 child: SingleChildScrollView(
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SizedBox(height: 40),
-
               // logo
               Icon(
                 Icons.lock,
@@ -41,8 +94,8 @@ class LoginPage extends StatelessWidget {
 
               // username text field
               MyTextField(
-                controller: usernameController,
-                hintText: 'Username',
+                controller: emailController,
+                hintText: 'Email',
                 obscureText: false,
               ),
               SizedBox(height: 30),
@@ -84,6 +137,7 @@ class LoginPage extends StatelessWidget {
 
               // First time? Register now
               Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text('First time?'),
                   const SizedBox(width: 4),
@@ -97,5 +151,6 @@ class LoginPage extends StatelessWidget {
             ],
           ),
         ))));
-  }
-}
+  } // widget build
+} //  class _loginStatePage
+
