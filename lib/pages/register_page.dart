@@ -41,19 +41,32 @@ class _RegisterPageState extends State<RegisterPage> {
         // pop loading circle
         Navigator.pop(context);
         // show password error message
-        showErrorMessage("Passwords do not match");
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              backgroundColor: Color.fromRGBO(64, 46, 50, 1),
+              title: Center(
+                  child: Text(
+                'Uh-oh, passwords do not match',
+                style: TextStyle(color: Colors.white),
+                textAlign: TextAlign.center,
+              )),
+            );
+          },
+        );
+        showErrorMessage('Passwords do not match');
       }
-      
+
       // pop the loading circle once user created
       if (mounted) {
         Navigator.pop(context);
       }
-
     } on FirebaseAuthException catch (e) {
       // pop loading circle
       Navigator.pop(context);
       print(e.message); // for other errors
-        showErrorMessage('Sorry there was an issue. Please try again');
+      showErrorMessage('Sorry there was an issue. Please try again');
     } // end of FirebaseAuthException catch
   }
 
