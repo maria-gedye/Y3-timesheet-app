@@ -29,6 +29,8 @@ class _RegisterPageState extends State<RegisterPage> {
       },
     );
 
+    // should also check if user doesn't already exist
+
 // try creating the user
     try {
       // check if password is confirmed
@@ -41,21 +43,8 @@ class _RegisterPageState extends State<RegisterPage> {
         // pop loading circle
         Navigator.pop(context);
         // show password error message
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              backgroundColor: Color.fromRGBO(64, 46, 50, 1),
-              title: Center(
-                  child: Text(
-                'Uh-oh, passwords do not match',
-                style: TextStyle(color: Colors.white),
-                textAlign: TextAlign.center,
-              )),
-            );
-          },
-        );
-        showErrorMessage('Passwords do not match');
+        showErrorMessage('Oops. Passwords do not match');
+        return;
       }
 
       // pop the loading circle once user created
