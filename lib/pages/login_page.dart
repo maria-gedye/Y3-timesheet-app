@@ -111,6 +111,7 @@ class _LoginPageState extends State<LoginPage> {
               SizedBox(height: 10),
 
               // forgot password?
+              // implement functionality for this
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 25.0),
                 child: Row(

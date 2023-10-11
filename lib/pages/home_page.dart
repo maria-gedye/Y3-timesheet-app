@@ -6,12 +6,16 @@ class HomePage extends StatelessWidget {
 
   final user = FirebaseAuth.instance.currentUser!;
   final ButtonStyle style = ElevatedButton.styleFrom(
-      textStyle: TextStyle(fontSize: 50,),
+      textStyle: TextStyle(
+        fontSize: 50,
+      ),
       backgroundColor: Color.fromRGBO(250, 195, 32, 1),
       foregroundColor: Color.fromRGBO(64, 46, 50, 1),
-      fixedSize: Size.fromRadius(100),
+      fixedSize: Size.fromRadius(115),
       shape: CircleBorder(),
-      shadowColor: Color.fromRGBO(164,142,101, 1));
+      shadowColor: Colors.black,
+      elevation: 10.0,
+      side: BorderSide(color: Color.fromRGBO(164, 142, 101, 1), width: 10.0,));
 
   //sign user out method
   void signUserOut() {
@@ -30,7 +34,7 @@ class HomePage extends StatelessWidget {
           actions: [
             IconButton(onPressed: signUserOut, icon: Icon(Icons.logout)),
           ],
-          leading: IconButton(onPressed: () {}, icon: Icon(Icons.menu)),
+          leading: IconButton(onPressed: () {}, icon: Icon(Icons.settings)),
         ),
         body: SafeArea(
           //child: Center(
@@ -43,7 +47,7 @@ class HomePage extends StatelessWidget {
                 padding: const EdgeInsets.all(20.0),
                 child: Row(
                   children: [
-                    Text('Hi, ${user.email!}',
+                    Text('Logged in as: ${user.email!}',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 20,
@@ -54,8 +58,8 @@ class HomePage extends StatelessWidget {
 
               SizedBox(height: 20),
 
-              // Clock in
-              Text('Clock In',
+              // Clock in title
+              Text('Clock in',
                   style: TextStyle(
                     color: Color.fromRGBO(250, 195, 32, 1),
                     fontSize: 40,
@@ -63,15 +67,23 @@ class HomePage extends StatelessWidget {
 
               SizedBox(height: 20),
 
-              // main button
+              // Timer display
+
+              // Get and display current location
+
+              // main button (switches between start and stop)
               ElevatedButton(
                 style: style,
                 onPressed: () {},
                 child: const Text('Start'),
-    
               ),
 
-              // Display stopwatch digits (if activated)
+              // total hours worked card
+
+              // Bottom Nav Bar with three buttons
+              // User button
+              // add shift button
+              // time log? timesheet?
             ],
           )),
           // ),
