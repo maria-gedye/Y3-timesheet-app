@@ -37,26 +37,11 @@ class HomePage extends StatelessWidget {
           leading: IconButton(onPressed: () {}, icon: Icon(Icons.settings)),
         ),
         body: SafeArea(
-          //child: Center(
+          child: Center(
           child: SingleChildScrollView(
               child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // display the current user
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Row(
-                  children: [
-                    Text('Logged in as: ${user.email!}',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                        )),
-                  ],
-                ),
-              ),
-
-              SizedBox(height: 20),
 
               // Clock in title
               Text('Clock in',
@@ -68,10 +53,27 @@ class HomePage extends StatelessWidget {
               SizedBox(height: 20),
 
               // Timer display
+              Text('0:00:00',
+                  style: TextStyle(
+                    color: Color.fromRGBO(250, 195, 32, 1),
+                    fontSize: 60,
+                  )),
 
-              // Get and display current location
-
-              // main button (switches between start and stop)
+              // Current location display
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.place_rounded, color: Colors.white,),
+                  Text('unknown location',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                      )),
+                ],
+              ),
+              SizedBox(height: 20),
+         
+              // timer button (switches between start and stop)
               ElevatedButton(
                 style: style,
                 onPressed: () {},
@@ -86,7 +88,7 @@ class HomePage extends StatelessWidget {
               // time log? timesheet?
             ],
           )),
-          // ),
+          )
         ));
   }
 }
