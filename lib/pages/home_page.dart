@@ -1,26 +1,20 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:timesheet_app/components/timer_button.dart';
 
 class HomePage extends StatelessWidget {
   HomePage({super.key});
 
   final user = FirebaseAuth.instance.currentUser!;
-  final ButtonStyle style = ElevatedButton.styleFrom(
-      textStyle: TextStyle(
-        fontSize: 50,
-      ),
-      backgroundColor: Color.fromRGBO(250, 195, 32, 1),
-      foregroundColor: Color.fromRGBO(64, 46, 50, 1),
-      fixedSize: Size.fromRadius(115),
-      shape: CircleBorder(),
-      shadowColor: Colors.black,
-      elevation: 10.0,
-      side: BorderSide(color: Color.fromRGBO(164, 142, 101, 1), width: 10.0,));
 
   //sign user out method
   void signUserOut() {
     FirebaseAuth.instance.signOut();
   }
+
+  // get user location method
+  // start timer method
+  // stop or save timer methods?
 
   @override
   Widget build(BuildContext context) {
@@ -37,12 +31,11 @@ class HomePage extends StatelessWidget {
           leading: IconButton(onPressed: () {}, icon: Icon(Icons.settings)),
         ),
         body: SafeArea(
-          child: Center(
+            child: Center(
           child: SingleChildScrollView(
               child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-
               // Clock in title
               Text('Clock in',
                   style: TextStyle(
@@ -63,7 +56,10 @@ class HomePage extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.place_rounded, color: Colors.white,),
+                  Icon(
+                    Icons.place_rounded,
+                    color: Colors.white,
+                  ),
                   Text('unknown location',
                       style: TextStyle(
                         color: Colors.white,
@@ -72,14 +68,9 @@ class HomePage extends StatelessWidget {
                 ],
               ),
               SizedBox(height: 20),
-         
-              // timer button (switches between start and stop)
-              ElevatedButton(
-                style: style,
-                onPressed: () {},
-                child: const Text('Start'),
-              ),
 
+              // timer button (switches between start and stop)
+              TimerButton(onTap: () {})
               // total hours worked card
 
               // Bottom Nav Bar with three buttons
@@ -88,7 +79,6 @@ class HomePage extends StatelessWidget {
               // time log? timesheet?
             ],
           )),
-          )
-        ));
+        )));
   }
 }
