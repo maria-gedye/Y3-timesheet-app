@@ -1,7 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.timesheet_app">
-    <!-- specifies permission type  --> 
+
+    <!-- important! add user permissions below BEFORE running app  --> 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
    <application
         android:label="timesheet_app"
         android:name="${applicationName}"

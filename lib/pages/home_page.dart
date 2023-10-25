@@ -1,21 +1,64 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:timesheet_app/components/timer_button.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   HomePage({super.key});
 
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+// state variables...
   final user = FirebaseAuth.instance.currentUser!;
+  Position? _currentLocation;
+  late bool servicePermission = false;
+  late LocationPermission permission;
+  String _currentAddress = '';
+
+// state methods...
 
   //sign user out method
   void signUserOut() {
     FirebaseAuth.instance.signOut();
   }
 
-  // get user location method
-  // start timer method
-  // stop or save timer methods?
+  // get current location method
+  Future<Position> _getCurrentLocation() async {
+    // this block checks if we have permission to access location services
+    servicePermission = await Geolocator.isLocationServiceEnabled();
+    if (!servicePermission) {
+      debugPrint("service disabled");
+    }
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
 
+    return await Geolocator.getCurrentPosition();
+  }
+
+  // geocoding method to convert coordinates to addresses
+  _getAddressFromCoordinates() async {
+    try {
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+          _currentLocation!.latitude, _currentLocation!.longitude);
+
+      Placemark place = placemarks[0];
+
+      setState(() {
+        _currentAddress =
+            "${place.street}, ${place.subLocality}, ${place.locality}";
+      });
+    } catch (e) {
+      debugPrint('$e');
+    }
+  }
+
+  // builds ui as...
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,7 +66,6 @@ class HomePage extends StatelessWidget {
 
         // log out
         appBar: AppBar(
-          //title: Text(),
           backgroundColor: Color.fromRGBO(64, 46, 50, 1),
           actions: [
             IconButton(onPressed: signUserOut, icon: Icon(Icons.logout)),
@@ -60,17 +102,37 @@ class HomePage extends StatelessWidget {
                     Icons.place_rounded,
                     color: Colors.white,
                   ),
-                  Text('unknown location',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                      )),
+                  Flexible(
+                    child: Column(
+                      children:[
+                        Text(_currentAddress, // current location string?
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                          ),
+                          softWrap: true,
+                          overflow: TextOverflow.fade,
+                          ),
+                      ] 
+                    ),
+                  ),
                 ],
               ),
+              
               SizedBox(height: 20),
 
-              // timer button (switches between start and stop)
-              TimerButton(onTap: () {})
+              // timer button
+              TimerButton(onPressed: () {}),
+
+              ElevatedButton(onPressed: () async {
+                _currentLocation = await _getCurrentLocation();
+                await _getAddressFromCoordinates();
+                print('$_currentLocation');
+                print(_currentAddress);
+              },
+                child: Text('get location')
+                )
+
               // total hours worked card
 
               // Bottom Nav Bar with three buttons

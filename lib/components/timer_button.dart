@@ -1,14 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 
 class TimerButton extends StatefulWidget {
-  final Function()? onTap;
+  final Function()? onPressed;
 
-  // timer button has multiple styles
-  const TimerButton({
-    super.key,
-    required this.onTap,
-  });
+  const TimerButton({ super.key, required this.onPressed });
 
   @override
   State<TimerButton> createState() => _TimerButtonState();
