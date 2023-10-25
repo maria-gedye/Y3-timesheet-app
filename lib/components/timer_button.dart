@@ -12,23 +12,13 @@ class TimerButton extends StatefulWidget {
 class _TimerButtonState extends State<TimerButton> {
   // initially show start button
   bool showStartButton = true;
-
-  // toggle between start and stop buttons
-  void toggleStartStop() {
-    setState(() {
-      showStartButton = !showStartButton;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    ButtonStyle style = ElevatedButton.styleFrom(
+  ButtonStyle startStyle = ElevatedButton.styleFrom(
         textStyle: TextStyle(
           fontSize: 50,
         ),
         backgroundColor: Color.fromRGBO(250, 195, 32, 1),
         foregroundColor: Color.fromRGBO(64, 46, 50, 1),
-        fixedSize: Size.fromRadius(115),
+        fixedSize: Size.fromRadius(100),
         shape: CircleBorder(),
         shadowColor: Colors.black,
         elevation: 10.0,
@@ -38,21 +28,13 @@ class _TimerButtonState extends State<TimerButton> {
         )
         );
 
-    if (showStartButton) {
-      return ElevatedButton(
-        onPressed: toggleStartStop,
-        style: style,
-        child: Text('Start'),
-      );
-    } else {
-      //return stop button
-      style = ElevatedButton.styleFrom(
+  ButtonStyle stopStyle = ElevatedButton.styleFrom(
         textStyle: TextStyle(
           fontSize: 50,
         ),
         backgroundColor: Color.fromRGBO(64, 46, 50, 1),
         foregroundColor: Color.fromRGBO(250, 195, 32, 1),
-        fixedSize: Size.fromRadius(115),
+        fixedSize: Size.fromRadius(100),
         shape: CircleBorder(),
         shadowColor: Colors.black,
         elevation: 10.0,
@@ -61,9 +43,26 @@ class _TimerButtonState extends State<TimerButton> {
           width: 10.0,
         )
       );
+  // toggle between start and stop buttons
+  void toggleStartStop() {
+    setState(() {
+      showStartButton = !showStartButton;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (showStartButton) {
       return ElevatedButton(
         onPressed: toggleStartStop,
-        style: style,
+        style: startStyle,
+        child: Text('Start'),
+      );
+    } else {
+      //return stop button
+      return ElevatedButton(
+        onPressed: toggleStartStop,
+        style: stopStyle,
         child: Text('Stop'),
       );
     }

@@ -18,12 +18,35 @@ class _HomePageState extends State<HomePage> {
   late bool servicePermission = false;
   late LocationPermission permission;
   String _currentAddress = '';
+  bool showStartButton = true;
+  ButtonStyle style = ElevatedButton.styleFrom(
+        textStyle: TextStyle(
+          fontSize: 50,
+        ),
+        backgroundColor: Color.fromRGBO(250, 195, 32, 1),
+        foregroundColor: Color.fromRGBO(64, 46, 50, 1),
+        fixedSize: Size.fromRadius(100),
+        shape: CircleBorder(),
+        shadowColor: Colors.black,
+        elevation: 10.0,
+        side: BorderSide(
+          color: Color.fromRGBO(164, 142, 101, 1),
+          width: 10.0,
+        )
+        );
 
 // state methods...
 
   //sign user out method
   void signUserOut() {
     FirebaseAuth.instance.signOut();
+  }
+
+  // toggle between start and stop buttons
+  void toggleStartStop() {
+    setState(() {
+      showStartButton = !showStartButton;
+    });
   }
 
   // get current location method
@@ -103,35 +126,34 @@ class _HomePageState extends State<HomePage> {
                     color: Colors.white,
                   ),
                   Flexible(
-                    child: Column(
-                      children:[
-                        Text(_currentAddress, // current location string?
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                          ),
-                          softWrap: true,
-                          overflow: TextOverflow.fade,
-                          ),
-                      ] 
-                    ),
+                    child: Column(children: [
+                      Text(
+                        _currentAddress, 
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
+                        softWrap: true,
+                        overflow: TextOverflow.fade,
+                      ),
+                    ]),
                   ),
                 ],
               ),
-              
+
               SizedBox(height: 20),
 
-              // timer button
-              TimerButton(onPressed: () {}),
-
-              ElevatedButton(onPressed: () async {
-                _currentLocation = await _getCurrentLocation();
-                await _getAddressFromCoordinates();
-                print('$_currentLocation');
-                print(_currentAddress);
-              },
-                child: Text('get location')
-                )
+              // clock in button
+              ElevatedButton(
+                  onPressed: () async {
+                    _currentLocation = await _getCurrentLocation();
+                    await _getAddressFromCoordinates();
+                    print('$_currentLocation');
+                    print(_currentAddress);
+                    // change to new state                    
+                  },
+                  style: style,  
+                  child: Text('button'))
 
               // total hours worked card
 
