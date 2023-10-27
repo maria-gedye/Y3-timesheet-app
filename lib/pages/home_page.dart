@@ -1,6 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:timesheet_app/components/timer_button.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'dart:async';
@@ -25,6 +24,7 @@ class _HomePageState extends State<HomePage> {
   Timer? timer;
   bool started = false;
   List shifts = [];
+  int currentPageIndex = 0;
 
 // state methods...
 
@@ -130,7 +130,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
         backgroundColor: Color.fromRGBO(64, 46, 50, 1),
 
-        // log out, settings
+        // Top nav bar: log out, settings
         appBar: AppBar(
           backgroundColor: Color.fromRGBO(64, 46, 50, 1),
           actions: [
@@ -138,12 +138,50 @@ class _HomePageState extends State<HomePage> {
           ],
           leading: IconButton(onPressed: () {}, icon: Icon(Icons.settings)),
         ),
-        body: SafeArea(
+
+        // Bottom Nav Bar: user, add entry, send timesheet
+      bottomNavigationBar: NavigationBarTheme(
+        data: NavigationBarThemeData(
+          indicatorColor: Color.fromRGBO(64, 46, 50, 1),
+          labelTextStyle: MaterialStateProperty.all(const TextStyle(
+            color: Color.fromRGBO(250, 195, 32, 1)
+            ))),
+        child: NavigationBar(
+          labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
+          backgroundColor: Color.fromRGBO(64, 46, 50, 1),
+          onDestinationSelected: (int index) {
+            setState(() {
+              currentPageIndex = index;
+            });
+          },
+          selectedIndex: currentPageIndex,
+          destinations: const <Widget>[
+            NavigationDestination(
+              icon: Icon(Icons.person_2_outlined, color: Color.fromRGBO(250, 195, 32, 1), size: 40),
+              label: 'User',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.add, color: Color.fromRGBO(250, 195, 32, 1), size: 75.0,),
+              label: 'Add',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.document_scanner_outlined, color: Color.fromRGBO(250, 195, 32, 1), size: 40),
+              label: 'Timesheet',
+            ),
+          ],
+        ),
+      ),
+
+      // main body
+        body: <Widget> [
+          SafeArea(
             child: Center(
           child: SingleChildScrollView(
               child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              SizedBox(height: 20),
+
               // Clock in title
               Text((!started) ? 'Clock in' : 'Clock out',
                   style: TextStyle(
@@ -256,14 +294,14 @@ class _HomePageState extends State<HomePage> {
                             Text(
                               "Shift# ${index + 1}",
                               style: const TextStyle(
-                                color: Colors.amber,
+                                color: Colors.white,
                                 fontSize: 16.0,
                               ),
                             ),
                             Text(
                               "${shifts[index]}",
                               style: const TextStyle(
-                                color: Colors.amber,
+                                color: Colors.white,
                                 fontSize: 16.0,
                               ),
                             ),
@@ -274,13 +312,9 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
               ),
-
-              // Bottom Nav Bar with three buttons:
-              // 1. User details
-              // 2. add shift (manual entry)
-              // 3. send timesheet
             ],
           )),
-        )));
+        )),] [currentPageIndex],
+    );
   }
 }
