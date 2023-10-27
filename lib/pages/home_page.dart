@@ -127,194 +127,191 @@ class _HomePageState extends State<HomePage> {
   // builds ui as...
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        backgroundColor: Color.fromRGBO(64, 46, 50, 1),
-
-        // Top nav bar: log out, settings
-        appBar: AppBar(
+    return DefaultTabController(
+        initialIndex: 1,
+        length: 3,
+        child: Scaffold(
           backgroundColor: Color.fromRGBO(64, 46, 50, 1),
-          actions: [
-            IconButton(onPressed: signUserOut, icon: Icon(Icons.logout)),
-          ],
-          leading: IconButton(onPressed: () {}, icon: Icon(Icons.settings)),
-        ),
-
-        // Bottom Nav Bar: user, add entry, send timesheet
-      bottomNavigationBar: NavigationBarTheme(
-        data: NavigationBarThemeData(
-          indicatorColor: Color.fromRGBO(64, 46, 50, 1),
-          labelTextStyle: MaterialStateProperty.all(const TextStyle(
-            color: Color.fromRGBO(250, 195, 32, 1)
-            ))),
-        child: NavigationBar(
-          labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
-          backgroundColor: Color.fromRGBO(64, 46, 50, 1),
-          onDestinationSelected: (int index) {
-            setState(() {
-              currentPageIndex = index;
-            });
-          },
-          selectedIndex: currentPageIndex,
-          destinations: const <Widget>[
-            NavigationDestination(
-              icon: Icon(Icons.person_2_outlined, color: Color.fromRGBO(250, 195, 32, 1), size: 40),
-              label: 'User',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.add, color: Color.fromRGBO(250, 195, 32, 1), size: 75.0,),
-              label: 'Add',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.document_scanner_outlined, color: Color.fromRGBO(250, 195, 32, 1), size: 40),
-              label: 'Timesheet',
-            ),
-          ],
-        ),
-      ),
-
-      // main body
-        body: <Widget> [
-          SafeArea(
-            child: Center(
-          child: SingleChildScrollView(
-              child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SizedBox(height: 20),
-
-              // Clock in title
-              Text((!started) ? 'Clock in' : 'Clock out',
-                  style: TextStyle(
-                    color: Color.fromRGBO(250, 195, 32, 1),
-                    fontSize: 40,
-                  )),
-
-              SizedBox(height: 20),
-
-              // Current location display
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.place_rounded,
-                    color: Colors.white,
+            appBar: AppBar(
+              title: const Text('Timesheet Tracker'),
+              backgroundColor: Color.fromRGBO(64, 46, 50, 1),
+              actions: [
+                IconButton(onPressed: signUserOut, icon: Icon(Icons.logout)),
+              ],
+              bottom: const TabBar(
+                tabs: <Widget>[
+                  Tab(
+                    icon: Icon(Icons.person_2_outlined,
+                        color: Color.fromRGBO(250, 195, 32, 1), size: 30),
                   ),
-                  Flexible(
-                    child: Column(children: [
-                      Text(
-                        _currentAddress.isNotEmpty
-                            ? _currentAddress
-                            : 'unknown',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                        ),
-                        softWrap: true,
-                        overflow: TextOverflow.fade,
-                      ),
-                    ]),
+                  Tab(
+                    icon: Icon(
+                      Icons.punch_clock,
+                      color: Color.fromRGBO(250, 195, 32, 1),
+                      size: 40.0,
+                    ),
+                  ),
+                  Tab(
+                    icon: Icon(Icons.document_scanner_outlined,
+                        color: Color.fromRGBO(250, 195, 32, 1), size: 30),
                   ),
                 ],
               ),
+            ),
 
-              SizedBox(height: 20),
+            // main body
+            body: TabBarView(children: <Widget>[
+              // user tab 
+              Center(
+                child: Text("user page"),
+              ),
+              // tracker tab
+              Center(
+                child: SafeArea(
+                    child: SingleChildScrollView(
+                        child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(height: 20),
 
-              // Timer display
-              Text('$digitHours:$digitMinutes:$digitSeconds',
-                  style: TextStyle(
-                    color: Color.fromRGBO(250, 195, 32, 1),
-                    fontSize: 60,
-                  )),
+                        // Clock in title
+                        Text((!started) ? 'Clock in' : 'Clock out',
+                          style: TextStyle(
+                              color: Color.fromRGBO(250, 195, 32, 1),
+                              fontSize: 30,
+                            )),
 
-              // clock in button
-              ElevatedButton(
-                  onPressed: () async {
-                    _currentLocation = await _getCurrentLocation();
-                    await _getAddressFromCoordinates();
+                        SizedBox(height: 10),
 
-                    print('$_currentLocation');
-                    print(_currentAddress);
+                        // Timer display
+                        Text('$digitHours:$digitMinutes:$digitSeconds',
+                          style: TextStyle(
+                            color: Color.fromRGBO(250, 195, 32, 1),
+                            fontSize: 60,
+                          )
+                          ),
 
-                    (!started) ? start() : stop();
-                  },
-                  style: ElevatedButton.styleFrom(
-                      textStyle: TextStyle(
-                        fontSize: 50,
-                      ),
-                      backgroundColor: (!started)
-                          ? Color.fromRGBO(250, 195, 32, 1)
-                          : Color.fromRGBO(64, 46, 50, 1),
-                      foregroundColor: (!started)
-                          ? Color.fromRGBO(64, 46, 50, 1)
-                          : Color.fromRGBO(250, 195, 32, 1),
-                      fixedSize: Size.fromRadius(100),
-                      shape: CircleBorder(),
-                      shadowColor: Colors.black,
-                      elevation: 10.0,
-                      side: BorderSide(
-                        color: Color.fromRGBO(164, 142, 101, 1),
-                        width: 10.0,
-                      )),
-                  child: Text((!started) ? 'Start' : 'Stop')),
+                        SizedBox(height: 10),
+                        // clock in button
+                        ElevatedButton(
+                          onPressed: () async {
+                            _currentLocation = await _getCurrentLocation();
+                            await _getAddressFromCoordinates();
 
-              SizedBox(height: 10),
-              // cancel the timer
-              TextButton(
-                  onPressed: () {
-                    (started) ? reset() : null;
-                  },
-                  style: TextButton.styleFrom(
-                    disabledForegroundColor: Colors.grey,
-                    foregroundColor: (!started)
-                        ? Color.fromRGBO(64, 46, 50, 1)
-                        : Color.fromRGBO(250, 195, 32, 1),
-                  ),
-                  child: Text(
-                    'Cancel',
-                    style: TextStyle(fontSize: 16.0),
-                  )),
+                            print('$_currentLocation');
+                            print(_currentAddress);
 
-              // total hours worked card
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Container(
-                  height: 160.0,
-                  decoration: BoxDecoration(
-                      color: Color.fromARGB(255, 73, 53, 57),
-                      borderRadius: BorderRadius.circular(10.0)),
-                  //list of shifts
-                  child: ListView.builder(
-                    itemCount: shifts.length,
-                    itemBuilder: (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              "Shift# ${index + 1}",
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16.0,
+                            (!started) ? start() : stop();
+                          },
+                          style: ElevatedButton.styleFrom(
+                              textStyle: TextStyle(
+                                fontSize: 50,
                               ),
+                              backgroundColor: (!started)
+                                  ? Color.fromRGBO(250, 195, 32, 1)
+                                  : Color.fromRGBO(64, 46, 50, 1),
+                              foregroundColor: (!started)
+                                  ? Color.fromRGBO(64, 46, 50, 1)
+                                  : Color.fromRGBO(250, 195, 32, 1),
+                              fixedSize: Size.fromRadius(100),
+                              shape: CircleBorder(),
+                              shadowColor: Colors.black,
+                              elevation: 10.0,
+                              side: BorderSide(
+                                color: Color.fromRGBO(164, 142, 101, 1),
+                                width: 10.0,
+                              )),
+                          child: Text((!started) ? 'Start' : 'Stop')),
+
+                        // cancel the timer
+                      TextButton(
+                            onPressed: () {
+                              (started) ? reset() : null;
+                            },
+                            style: TextButton.styleFrom(
+                              disabledForegroundColor: Colors.grey,
+                              foregroundColor: (!started)
+                                  ? Color.fromRGBO(64, 46, 50, 1)
+                                  : Color.fromRGBO(250, 195, 32, 1),
                             ),
-                            Text(
-                              "${shifts[index]}",
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16.0,
-                              ),
+                            child: Text(
+                              'Cancel',
+                              style: TextStyle(fontSize: 16.0),
+                            )),
+
+                      SizedBox(height: 10),
+                       // Current location display
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.place_rounded,
+                              color: Colors.white,
+                            ),
+                            Flexible(
+                              child: Column(children: [
+                                Text(
+                                  _currentAddress.isNotEmpty
+                                      ? _currentAddress
+                                      : 'unknown',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                  ),
+                                  softWrap: true,
+                                  overflow: TextOverflow.fade,
+                                ),
+                              ]),
                             ),
                           ],
                         ),
-                      );
-                    },
-                  ),
-                ),
+
+                        // total hours worked card
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Container(
+                            height: 160.0,
+                            decoration: BoxDecoration(
+                                color: Color.fromARGB(255, 73, 53, 57),
+                                borderRadius: BorderRadius.circular(10.0)),
+                            //list of shifts
+                            child: ListView.builder(
+                              itemCount: shifts.length,
+                              itemBuilder: (context, index) {
+                                return Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        "Shift# ${index + 1}",
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16.0,
+                                        ),
+                                      ),
+                                      Text(
+                                        "${shifts[index]}",
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16.0,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
+                    ))),
               ),
-            ],
-          )),
-        )),] [currentPageIndex],
-    );
+              // timesheet tab
+              Center(
+                child: Text("send timesheet page"),
+              ),
+            ])));
   }
 }
