@@ -1,8 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'dart:async';
+import 'package:timesheet_app/components/work_shift.dart';
+// import custom timer class, 
 
 class HomePage extends StatefulWidget {
   HomePage({super.key});
@@ -66,11 +69,13 @@ class _HomePageState extends State<HomePage> {
   }
 
   // methods for timer
+  
   void stop() {
     timer!.cancel();
     setState(() {
       started = false;
-      addShifts(); // adds entries to the shifts list
+      addWorkedTime(); // adds entries to the shifts list
+      // add the saveShift() here
     });
   }
 
@@ -88,7 +93,8 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  void addShifts() {
+// use this function to fill out workedTime property for new shift objects
+  void addWorkedTime() {
     String shift = "$digitHours:$digitMinutes:$digitSeconds";
     setState(() {
       (shift != "00:00:00") ? shifts.add(shift) : null;
@@ -98,6 +104,7 @@ class _HomePageState extends State<HomePage> {
 
   // start the timer function
   void start() {
+    // TODO put all this logic (except for setState) into timer dart file
     started = true;
     timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       int localSeconds = seconds + 1;
@@ -124,6 +131,11 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void saveShift() {
+    if ()
+  }
+
+
   // builds ui as...
   @override
   Widget build(BuildContext context) {
@@ -131,7 +143,7 @@ class _HomePageState extends State<HomePage> {
         initialIndex: 1,
         length: 3,
         child: Scaffold(
-          backgroundColor: Color.fromRGBO(64, 46, 50, 1),
+            backgroundColor: Color.fromRGBO(64, 46, 50, 1),
             appBar: AppBar(
               title: const Text('Timesheet Tracker'),
               backgroundColor: Color.fromRGBO(64, 46, 50, 1),
@@ -160,40 +172,71 @@ class _HomePageState extends State<HomePage> {
             ),
 
             // main body
-            body: TabBarView(children: <Widget>[
-              // user tab 
-              Center(
-                child: Text("user page"),
-              ),
-              // tracker tab
-              Center(
-                child: SafeArea(
-                    child: SingleChildScrollView(
-                        child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SizedBox(height: 20),
+            body: SafeArea(
+              child: TabBarView(children: <Widget>[
+                // access to firebase firestore
+                Expanded(
+                    child: StreamBuilder(
+                  stream: FirebaseFirestore.instance
+                      .collection("User Shifts")
+                      .orderBy("Timestamp", descending: false)
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      // TODO: somehow bring this RETURN block into third tab...
+                      return ListView.builder(
+                        itemCount: Null,
+                        itemBuilder: (context, index) {
+                          // get the shift_item from db
+                          final shift = snapshot.data!.docs[index];
+                          return WorkShift(
+                              date: shift['DateTime'],
+                              duration: shift['WorkedTime'],
+                              place: shift['PlaceName']);
+                        },
+                      );
+                    } else if (snapshot.hasError) {
+                      return Center(
+                        child: Text('Error: ${snapshot.error}'),
+                      );
+                    }
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  },
+                )),
 
-                        // Clock in title
-                        Text((!started) ? 'Clock in' : 'Clock out',
+                // user tab
+                Center(
+                  child: Text("user page"),
+                ),
+                // tracker tab
+                Center(
+                  child: SingleChildScrollView(
+                      child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(height: 20),
+
+                      // Clock in title
+                      Text((!started) ? 'Clock in' : 'Clock out',
                           style: TextStyle(
-                              color: Color.fromRGBO(250, 195, 32, 1),
-                              fontSize: 30,
-                            )),
+                            color: Color.fromRGBO(250, 195, 32, 1),
+                            fontSize: 30,
+                          )),
 
-                        SizedBox(height: 10),
+                      SizedBox(height: 10),
 
-                        // Timer display
-                        Text('$digitHours:$digitMinutes:$digitSeconds',
+                      // Timer display
+                      Text('$digitHours:$digitMinutes:$digitSeconds',
                           style: TextStyle(
                             color: Color.fromRGBO(250, 195, 32, 1),
                             fontSize: 60,
-                          )
-                          ),
+                          )),
 
-                        SizedBox(height: 10),
-                        // clock in button
-                        ElevatedButton(
+                      SizedBox(height: 10),
+                      // clock in button
+                      ElevatedButton(
                           onPressed: () async {
                             _currentLocation = await _getCurrentLocation();
                             await _getAddressFromCoordinates();
@@ -223,95 +266,96 @@ class _HomePageState extends State<HomePage> {
                               )),
                           child: Text((!started) ? 'Start' : 'Stop')),
 
-                        // cancel the timer
+                      // cancel the timer
                       TextButton(
-                            onPressed: () {
-                              (started) ? reset() : null;
-                            },
-                            style: TextButton.styleFrom(
-                              disabledForegroundColor: Colors.grey,
-                              foregroundColor: (!started)
-                                  ? Color.fromRGBO(64, 46, 50, 1)
-                                  : Color.fromRGBO(250, 195, 32, 1),
-                            ),
-                            child: Text(
-                              'Cancel',
-                              style: TextStyle(fontSize: 16.0),
-                            )),
+                          onPressed: () {
+                            (started) ? reset() : null;
+                          },
+                          style: TextButton.styleFrom(
+                            disabledForegroundColor: Colors.grey,
+                            foregroundColor: (!started)
+                                ? Color.fromRGBO(64, 46, 50, 1)
+                                : Color.fromRGBO(250, 195, 32, 1),
+                          ),
+                          child: Text(
+                            'Cancel',
+                            style: TextStyle(fontSize: 16.0),
+                          )),
 
                       SizedBox(height: 10),
-                       // Current location display
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.place_rounded,
-                              color: Colors.white,
-                            ),
-                            Flexible(
-                              child: Column(children: [
-                                Text(
-                                  _currentAddress.isNotEmpty
-                                      ? _currentAddress
-                                      : 'unknown',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                  ),
-                                  softWrap: true,
-                                  overflow: TextOverflow.fade,
+                      // Current location display
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.place_rounded,
+                            color: Colors.white,
+                          ),
+                          Flexible(
+                            child: Column(children: [
+                              Text(
+                                _currentAddress.isNotEmpty
+                                    ? _currentAddress
+                                    : 'unknown',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
                                 ),
-                              ]),
-                            ),
-                          ],
-                        ),
+                                softWrap: true,
+                                overflow: TextOverflow.fade,
+                              ),
+                            ]),
+                          ),
+                        ],
+                      ),
 
-                        // total hours worked card
-                        Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Container(
-                            height: 160.0,
-                            decoration: BoxDecoration(
-                                color: Color.fromARGB(255, 73, 53, 57),
-                                borderRadius: BorderRadius.circular(10.0)),
-                            //list of shifts
-                            child: ListView.builder(
-                              itemCount: shifts.length,
-                              itemBuilder: (context, index) {
-                                return Padding(
-                                  padding: const EdgeInsets.all(16.0),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        "Shift# ${index + 1}",
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 16.0,
-                                        ),
+                      // total hours worked card
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Container(
+                          height: 160.0,
+                          decoration: BoxDecoration(
+                              color: Color.fromARGB(255, 73, 53, 57),
+                              borderRadius: BorderRadius.circular(10.0)),
+                          //list of shifts
+                          child: ListView.builder(
+                            itemCount: shifts.length,
+                            itemBuilder: (context, index) {
+                              return Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      "Shift# ${index + 1}",
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16.0,
                                       ),
-                                      Text(
-                                        "${shifts[index]}",
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 16.0,
-                                        ),
+                                    ),
+                                    Text(
+                                      "${shifts[index]}",
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16.0,
                                       ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
                           ),
                         ),
-                      ],
-                    ))),
-              ),
-              // timesheet tab
-              Center(
-                child: Text("send timesheet page"),
-              ),
-            ])));
+                      ),
+                    ],
+                  )),
+                ),
+                // timesheet tab
+                Center(
+                  child: Text("history/insights page"),
+                ),
+              ]),
+            )));
   }
 }
