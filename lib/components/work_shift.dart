@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+// possibly Im already doubling up and need to decide between this and shift_item?
 class WorkShift extends StatelessWidget {
   final String date;
   final String duration;

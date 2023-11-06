@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'pages/auth_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+// import data dart files here and then wrap MaterialApp
+// with a ChangeNotifierProvider builder
 
 void main() async {
   //initialise firebase 
