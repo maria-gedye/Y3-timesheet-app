@@ -330,6 +330,7 @@ class _HomePageState extends State<HomePage> {
         child: Scaffold(
             floatingActionButton: FloatingActionButton(
               onPressed: addShiftDialog,
+              backgroundColor: Color.fromRGBO(250, 195, 32, 1),
               child: const Icon(Icons.add),
             ),
             backgroundColor: Color.fromRGBO(64, 46, 50, 1),
@@ -364,7 +365,7 @@ class _HomePageState extends State<HomePage> {
             body: SafeArea(
               child: TabBarView(children: <Widget>[
                 // access to firebase firestore
-                Expanded(
+               /*  Expanded(
                     child: StreamBuilder(
                   stream: FirebaseFirestore.instance
                       .collection("User Shifts")
@@ -393,7 +394,7 @@ class _HomePageState extends State<HomePage> {
                       child: CircularProgressIndicator(),
                     );
                   },
-                )),
+                )), */
 
                 // user tab
                 Center(
