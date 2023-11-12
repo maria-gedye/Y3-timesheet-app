@@ -2,7 +2,6 @@ import 'package:timesheet_app/datetime/date_time_helper.dart';
 import 'package:timesheet_app/models/shift_item.dart';
 import 'package:flutter/material.dart';
 
-
 class ShiftData extends ChangeNotifier {
   // list all shifts
   List<ShiftItem> overallShiftList = [];
@@ -15,11 +14,15 @@ class ShiftData extends ChangeNotifier {
   // add new shift
   void addNewShift(ShiftItem newShift) {
     overallShiftList.add(newShift);
+
+    notifyListeners();
   }
 
   // delete shift
   void deleteShift(ShiftItem shift) {
     overallShiftList.remove(shift);
+
+    notifyListeners();
   }
 
   // get weekday from dateTime object
@@ -101,4 +104,3 @@ class ShiftData extends ChangeNotifier {
 
   // ONEDAY combine all shifts for a monthly view
 }
-

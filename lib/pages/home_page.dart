@@ -87,14 +87,13 @@ class _HomePageState extends State<HomePage> {
   void stopTimer() {
     timer!.cancel();
     TimeOfDay now = TimeOfDay.now();
-    DateTime today = DateTime.now();
 
     setState(() {
       started = false;
       timerDuration();
       endTime =
           '${now.hour}:${now.minute} ${now.period.name}'; // get endTime str from now
-      saveTracker(today);
+      saveTracker();
     });
   }
 
@@ -157,15 +156,16 @@ class _HomePageState extends State<HomePage> {
   }
 
   // put info into new shift object then save to list
-  void saveTracker(DateTime currentDate) {
+  void saveTracker() {
     // create shift_item object via timetracker
     ShiftItem newShift = ShiftItem(
-        placeName: "open dialog for user to type place",
-        address: _currentAddress,
-        startTime: startTime,
-        endTime: endTime,
-        workedTime: _currentDuration,
-        dateTime: currentDate);
+      placeName: "open dialog for user to type place",
+      address: _currentAddress,
+      startTime: startTime,
+      endTime: endTime,
+      workedTime: _currentDuration,
+      dateTime: DateTime.now(),
+    );
     // add new shift from shift_data.dart
     Provider.of<ShiftData>(context, listen: false).addNewShift(newShift);
   }
@@ -175,7 +175,7 @@ class _HomePageState extends State<HomePage> {
     showDialog(
         context: context,
         builder: (context) => AlertDialog(
-              title: const Text('Add shift manually'),
+              title: const Text('Add Shift'),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -284,9 +284,19 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  // clear the controllers (for dialog)
+  void clear() {
+    newAddressController.clear();
+    newDateController.clear();
+    newEndTimeController.clear();
+    newStartTimeController.clear();
+    newPlaceController.clear();
+  }
+
   // cancel the dialog
   void cancel() {
     Navigator.pop(context);
+    clear();
   }
 
   // calculate duration between two user input times
@@ -319,233 +329,215 @@ class _HomePageState extends State<HomePage> {
     Provider.of<ShiftData>(context, listen: false).addNewShift(newShift);
 
     Navigator.pop(context);
+    clear();
   }
 
   // builds ui as...
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-        initialIndex: 1,
-        length: 3,
-        child: Scaffold(
-            floatingActionButton: FloatingActionButton(
-              onPressed: addShiftDialog,
-              backgroundColor: Color.fromRGBO(250, 195, 32, 1),
-              child: const Icon(Icons.add),
-            ),
-            backgroundColor: Color.fromRGBO(64, 46, 50, 1),
-            appBar: AppBar(
-              title: const Text('Timesheet Tracker'),
-              backgroundColor: Color.fromRGBO(64, 46, 50, 1),
-              actions: [
-                IconButton(onPressed: signUserOut, icon: Icon(Icons.logout)),
-              ],
-              bottom: const TabBar(
-                tabs: <Widget>[
-                  Tab(
-                    icon: Icon(Icons.person_2_outlined,
-                        color: Color.fromRGBO(250, 195, 32, 1), size: 30),
-                  ),
-                  Tab(
-                    icon: Icon(
-                      Icons.punch_clock,
-                      color: Color.fromRGBO(250, 195, 32, 1),
-                      size: 40.0,
-                    ),
-                  ),
-                  Tab(
-                    icon: Icon(Icons.document_scanner_outlined,
-                        color: Color.fromRGBO(250, 195, 32, 1), size: 30),
-                  ),
-                ],
+    return Consumer<ShiftData>(
+      builder: (context, value, child) => DefaultTabController(
+          initialIndex: 1,
+          length: 3,
+          child: Scaffold(
+              floatingActionButton: FloatingActionButton(
+                onPressed: addShiftDialog,
+                backgroundColor: Color.fromRGBO(250, 195, 32, 1),
+                child: const Icon(Icons.add),
               ),
-            ),
-
-            // main body
-            body: SafeArea(
-              child: TabBarView(children: <Widget>[
-                // access to firebase firestore
-               /*  Expanded(
-                    child: StreamBuilder(
-                  stream: FirebaseFirestore.instance
-                      .collection("User Shifts")
-                      .orderBy("Timestamp", descending: false)
-                      .snapshots(),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      // TODO: somehow bring this RETURN block into third tab...
-                      return ListView.builder(
-                        itemCount: 0,
-                        itemBuilder: (context, index) {
-                          // get the shift_item from db
-                          final shift = snapshot.data!.docs[index];
-                          return WorkShift(
-                              date: shift['DateTime'],
-                              duration: shift['WorkedTime'],
-                              place: shift['PlaceName']);
-                        },
-                      );
-                    } else if (snapshot.hasError) {
-                      return Center(
-                        child: Text('Error: ${snapshot.error}'),
-                      );
-                    }
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  },
-                )), */
-
-                // user tab
-                Center(
-                  child: Text("user page"),
+              backgroundColor: Color.fromRGBO(64, 46, 50, 1),
+              appBar: AppBar(
+                title: const Text('Timesheet Tracker'),
+                backgroundColor: Color.fromRGBO(64, 46, 50, 1),
+                actions: [
+                  IconButton(onPressed: signUserOut, icon: Icon(Icons.logout)),
+                ],
+                bottom: const TabBar(
+                  tabs: <Widget>[
+                    Tab(
+                      icon: Icon(Icons.person_2_rounded,
+                          color: Colors.white, size: 30),
+                    ),
+                    Tab(
+                      icon: Icon(
+                        Icons.punch_clock_rounded,
+                        color: Color.fromRGBO(250, 195, 32, 1),
+                        size: 40.0,
+                      ),
+                    ),
+                    Tab(
+                      icon: Icon(Icons.menu_book_rounded,
+                          color: Colors.white, size: 30),
+                    ),
+                  ],
                 ),
-                // tracker tab
-                Center(
-                  child: SingleChildScrollView(
-                      child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(height: 20),
+              ),
 
-                      // Clock in title
-                      Text((!started) ? 'Clock in' : 'Clock out',
-                          style: TextStyle(
-                            color: Color.fromRGBO(250, 195, 32, 1),
-                            fontSize: 30,
-                          )),
-
-                      SizedBox(height: 10),
-
-                      // Timer display
-                      Text('$digitHours:$digitMinutes:$digitSeconds',
-                          style: TextStyle(
-                            color: Color.fromRGBO(250, 195, 32, 1),
-                            fontSize: 60,
-                          )),
-
-                      SizedBox(height: 10),
-                      // clock in button
-                      ElevatedButton(
-                          onPressed: () async {
-                            _currentLocation = await _getCurrentLocation();
-                            await _getAddressFromCoordinates();
-
-                            print('$_currentLocation');
-                            print(_currentAddress);
-
-                            (!started) ? startTimer() : stopTimer();
+              // main body
+              body: SafeArea(
+                child: TabBarView(children: <Widget>[
+                  // access to firebase firestore
+                  /*  Expanded(
+                      child: StreamBuilder(
+                    stream: FirebaseFirestore.instance
+                        .collection("User Shifts")
+                        .orderBy("Timestamp", descending: false)
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        // TODO: somehow bring this RETURN block into third tab...
+                        return ListView.builder(
+                          itemCount: 0,
+                          itemBuilder: (context, index) {
+                            // get the shift_item from db
+                            final shift = snapshot.data!.docs[index];
+                            return WorkShift(
+                                date: shift['DateTime'],
+                                duration: shift['WorkedTime'],
+                                place: shift['PlaceName']);
                           },
-                          style: ElevatedButton.styleFrom(
-                              textStyle: TextStyle(
-                                fontSize: 50,
-                              ),
-                              backgroundColor: (!started)
-                                  ? Color.fromRGBO(250, 195, 32, 1)
-                                  : Color.fromRGBO(64, 46, 50, 1),
+                        );
+                      } else if (snapshot.hasError) {
+                        return Center(
+                          child: Text('Error: ${snapshot.error}'),
+                        );
+                      }
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    },
+                  )), */
+
+                  // user tab
+                  Center(
+                    child: Text("user page"),
+                  ),
+                  // tracker tab
+                  Center(
+                    child: SingleChildScrollView(
+                        child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(height: 20),
+
+                        // Clock in title
+                        Text((!started) ? 'Clock in' : 'Clock out',
+                            style: TextStyle(
+                              color: Color.fromRGBO(250, 195, 32, 1),
+                              fontSize: 30,
+                            )),
+
+                        SizedBox(height: 10),
+
+                        // Timer display
+                        Text('$digitHours:$digitMinutes:$digitSeconds',
+                            style: TextStyle(
+                              color: Color.fromRGBO(250, 195, 32, 1),
+                              fontSize: 60,
+                            )),
+
+                        SizedBox(height: 10),
+                        // clock in button
+                        ElevatedButton(
+                            onPressed: () async {
+                              _currentLocation = await _getCurrentLocation();
+                              await _getAddressFromCoordinates();
+
+                              print('$_currentLocation');
+                              print(_currentAddress);
+
+                              (!started) ? startTimer() : stopTimer();
+                            },
+                            style: ElevatedButton.styleFrom(
+                                textStyle: TextStyle(
+                                  fontSize: 50,
+                                ),
+                                backgroundColor: (!started)
+                                    ? Color.fromRGBO(250, 195, 32, 1)
+                                    : Color.fromRGBO(64, 46, 50, 1),
+                                foregroundColor: (!started)
+                                    ? Color.fromRGBO(64, 46, 50, 1)
+                                    : Color.fromRGBO(250, 195, 32, 1),
+                                fixedSize: Size.fromRadius(100),
+                                shape: CircleBorder(),
+                                shadowColor: Colors.black,
+                                elevation: 10.0,
+                                side: BorderSide(
+                                  color: Color.fromRGBO(164, 142, 101, 1),
+                                  width: 10.0,
+                                )),
+                            child: Text((!started) ? 'Start' : 'Stop')),
+
+                        // cancel the timer
+                        TextButton(
+                            onPressed: () {
+                              (started) ? reset() : null;
+                            },
+                            style: TextButton.styleFrom(
+                              disabledForegroundColor: Colors.grey,
                               foregroundColor: (!started)
                                   ? Color.fromRGBO(64, 46, 50, 1)
                                   : Color.fromRGBO(250, 195, 32, 1),
-                              fixedSize: Size.fromRadius(100),
-                              shape: CircleBorder(),
-                              shadowColor: Colors.black,
-                              elevation: 10.0,
-                              side: BorderSide(
-                                color: Color.fromRGBO(164, 142, 101, 1),
-                                width: 10.0,
-                              )),
-                          child: Text((!started) ? 'Start' : 'Stop')),
+                            ),
+                            child: Text(
+                              'Cancel',
+                              style: TextStyle(fontSize: 16.0),
+                            )),
 
-                      // cancel the timer
-                      TextButton(
-                          onPressed: () {
-                            (started) ? reset() : null;
-                          },
-                          style: TextButton.styleFrom(
-                            disabledForegroundColor: Colors.grey,
-                            foregroundColor: (!started)
-                                ? Color.fromRGBO(64, 46, 50, 1)
-                                : Color.fromRGBO(250, 195, 32, 1),
-                          ),
-                          child: Text(
-                            'Cancel',
-                            style: TextStyle(fontSize: 16.0),
-                          )),
-
-                      SizedBox(height: 10),
-                      // Current location display
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.place_rounded,
-                            color: Colors.white,
-                          ),
-                          Flexible(
-                            child: Column(children: [
-                              Text(
-                                _currentAddress.isNotEmpty
-                                    ? _currentAddress
-                                    : 'unknown',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
+                        SizedBox(height: 10),
+                        // Current location display
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.place_rounded,
+                              color: Colors.white,
+                            ),
+                            Flexible(
+                              child: Column(children: [
+                                Text(
+                                  _currentAddress.isNotEmpty
+                                      ? _currentAddress
+                                      : 'unknown',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                  ),
+                                  softWrap: true,
+                                  overflow: TextOverflow.fade,
                                 ),
-                                softWrap: true,
-                                overflow: TextOverflow.fade,
-                              ),
-                            ]),
-                          ),
-                        ],
-                      ),
+                              ]),
+                            ),
+                          ],
+                        ),
 
-                      // total hours worked card
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Container(
-                          height: 160.0,
-                          decoration: BoxDecoration(
-                              color: Color.fromARGB(255, 73, 53, 57),
-                              borderRadius: BorderRadius.circular(10.0)),
-                          // simple view list of shifts
-                          child: ListView.builder(
-                            itemCount: shifts.length,
-                            itemBuilder: (context, index) {
-                              return Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      "StartDate, PlaceName",
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16.0,
-                                      ),
-                                    ),
-                                    Text(
-                                      "${shifts[index]}",
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16.0,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
+                        // total hours worked card
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Container(
+                            height: 160.0,
+                            decoration: BoxDecoration(
+                                color: Color.fromARGB(255, 73, 53, 57),
+                                borderRadius: BorderRadius.circular(10.0)),
+
+                            // simple view list of shifts
+                            child: ListView.builder(
+                              itemCount: value.getAllShifts().length,
+                              itemBuilder: (context, index) => ListTile(
+                                  title: Text(
+                                      value.getAllShifts()[index].placeName)),
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  )),
-                ),
-                // timesheet tab
-                Center(
-                  child: Text("shift tiles, bar graph, trigger email"),
-                ),
-              ]),
-            )));
+                      ],
+                    )),
+                  ),
+                  // timesheet tab
+                  Center(
+                    child: Text("shift tiles, bar graph, trigger email"),
+                  ),
+                ]),
+              ))),
+    );
   }
 }

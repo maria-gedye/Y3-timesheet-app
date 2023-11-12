@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:timesheet_app/data/shift_data.dart';
 import 'pages/auth_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-// import data dart files here and then wrap MaterialApp
-// with a ChangeNotifierProvider builder
 
 void main() async {
-  //initialise firebase 
+  //initialise firebase
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     // this object is exported by the configuration file
@@ -20,9 +20,12 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: AuthPage(),
+    return ChangeNotifierProvider(
+      create: (context) => ShiftData(),
+      builder: (context, child) => const MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: AuthPage(),
+      ),
     ); // MaterialApp
   }
 }
