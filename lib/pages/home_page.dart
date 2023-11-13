@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:timesheet_app/components/shift_tile.dart';
 import 'dart:async';
 import 'package:timesheet_app/components/work_shift.dart';
 import 'package:provider/provider.dart';
@@ -31,6 +32,7 @@ class _HomePageState extends State<HomePage> {
   bool started = false;
   List shifts = [];
   int currentPageIndex = 0;
+  String place = '';
 
   // add shift dialog variables
   final newPlaceController = TextEditingController();
@@ -38,7 +40,7 @@ class _HomePageState extends State<HomePage> {
   final newDateController = TextEditingController();
   final newStartTimeController = TextEditingController();
   final newEndTimeController = TextEditingController();
-  late DateTime pickedDate;
+  late DateTime pickedDate = DateTime(2023, 0, 0, 0, 0);
   String startTime = '', endTime = '';
   TimeOfDay thisTime = TimeOfDay(hour: 0, minute: 0);
   TimeOfDay startTimeDialog = TimeOfDay(hour: 0, minute: 0);
@@ -75,8 +77,7 @@ class _HomePageState extends State<HomePage> {
       Placemark place = placemarks[0];
 
       setState(() {
-        _currentAddress =
-            "${place.street}, ${place.subLocality}, ${place.locality}";
+        _currentAddress = "${place.street}, ${place.subLocality}";
       });
     } catch (e) {
       debugPrint('$e');
@@ -113,11 +114,11 @@ class _HomePageState extends State<HomePage> {
 
 // use this function to fill out workedTime property to be passed to new shift objects
   void timerDuration() {
-    String shift = "$digitHours:$digitMinutes:$digitSeconds";
+    String shiftTime = "$digitHours hrs $digitMinutes min";
     setState(() {
-      if (shift != "00:00:00") {
-        shifts.add(shift); // SWAP out when you make the shift tiles
-        _currentDuration = shift;
+      if (minutes > 0) {
+        // add this duration to new shift obj's workedTime property via this global variable
+        _currentDuration = shiftTime;
       }
 
       reset();
@@ -155,11 +156,52 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  // user to enter place name when stopping timer
+  void showPlaceDialog() {
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+              title: const Text('Enter Place'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: newPlaceController,
+                      decoration:
+                          const InputDecoration(labelText: 'Place Name'),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                // save dialog
+                MaterialButton(
+                  onPressed: () {
+                    savePlaceDialog();
+                  },
+                  child: const Text('Save'),
+                ),
+                //cancel dialog
+                MaterialButton(
+                  onPressed: cancel,
+                  child: const Text('Cancel'),
+                ),
+              ],
+            ));
+
+    Navigator.pop(context);
+  }
+
+  void savePlaceDialog() {
+    place = newPlaceController.text;
+  }
+
   // put info into new shift object then save to list
   void saveTracker() {
     // create shift_item object via timetracker
     ShiftItem newShift = ShiftItem(
-      placeName: "open dialog for user to type place",
+      placeName: place,
       address: _currentAddress,
       startTime: startTime,
       endTime: endTime,
@@ -213,7 +255,6 @@ class _HomePageState extends State<HomePage> {
                           const InputDecoration(labelText: 'Start Time'),
                       onTap: () => {
                         _selectTime(newStartTimeController),
-                        startTimeDialog = thisTime
                       },
                     ),
 
@@ -224,7 +265,6 @@ class _HomePageState extends State<HomePage> {
                       decoration: const InputDecoration(labelText: 'End Time'),
                       onTap: () => {
                         _selectTime(newEndTimeController),
-                        endTimeDialog = thisTime
                       },
                     ),
 
@@ -265,22 +305,31 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // timepicker method
+  // timepicker method -- needs to also store start/end times to calc duration
   Future<void> _selectTime(final controller) async {
     final TimeOfDay? getTime = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
-      initialEntryMode: TimePickerEntryMode.dialOnly,
+      initialEntryMode: TimePickerEntryMode.dial,
     );
 
     if (getTime != null) {
-      setState(() {
-        String newTimeText =
-            "${getTime.hour}:${getTime.minute} ${getTime.period.name}";
-        controller.text = newTimeText;
-      });
+      if (startTimeDialog != TimeOfDay(hour: 0, minute: 0)) {
+        setState(() {
+          endTimeDialog = getTime;
+          String newTimeText =
+              "${getTime.hour}:${getTime.minute} ${getTime.period.name}";
+          controller.text = newTimeText;
+        });
 
-      thisTime = getTime;
+      } else {
+        setState(() {
+          startTimeDialog = getTime;
+          String newTimeText =
+              "${getTime.hour}:${getTime.minute} ${getTime.period.name}";
+          controller.text = newTimeText;
+        });
+      }
     }
   }
 
@@ -301,8 +350,8 @@ class _HomePageState extends State<HomePage> {
 
   // calculate duration between two user input times
   TimeOfDay calculateTimeDuration(TimeOfDay startTime, TimeOfDay endTime) {
-    int startMinutes = startTime.hour * 60 + startTime.minute;
-    int endMinutes = endTime.hour * 60 + endTime.minute;
+    int startMinutes = startTime.hourOfPeriod * 60 + startTime.minute;
+    int endMinutes = endTime.hourOfPeriod * 60 + endTime.minute;
     int durationInMinutes = (endMinutes - startMinutes).abs();
 
     int hours = durationInMinutes ~/ 60;
@@ -314,6 +363,9 @@ class _HomePageState extends State<HomePage> {
   // put info into new shift object then save to list
   void saveDialog(DateTime newDate) {
     // find difference between two timeOfDay objects
+    print(
+        'start time before calculation: $startTimeDialog end time before calc: $endTimeDialog');
+
     TimeOfDay duration = calculateTimeDuration(startTimeDialog, endTimeDialog);
     String workedTime = '${duration.hour}hrs ${duration.minute}min';
 
@@ -321,12 +373,15 @@ class _HomePageState extends State<HomePage> {
     ShiftItem newShift = ShiftItem(
         placeName: newPlaceController.text,
         address: newAddressController.text,
-        startTime: startTime,
-        endTime: endTime,
+        startTime: newStartTimeController.text,
+        endTime: newEndTimeController.text,
         workedTime: workedTime,
         dateTime: newDate);
     // add new shift from shift_data.dart
     Provider.of<ShiftData>(context, listen: false).addNewShift(newShift);
+
+    print(
+        'start: ${newShift.startTime}, end: ${newShift.endTime}, total: ${newShift.workedTime}');
 
     Navigator.pop(context);
     clear();
@@ -347,7 +402,8 @@ class _HomePageState extends State<HomePage> {
               ),
               backgroundColor: Color.fromRGBO(64, 46, 50, 1),
               appBar: AppBar(
-                title: const Text('Timesheet Tracker'),
+                // TODO: change titles as user selects different tabs
+                title: const Text('Shift Tracker'),
                 backgroundColor: Color.fromRGBO(64, 46, 50, 1),
                 actions: [
                   IconButton(onPressed: signUserOut, icon: Icon(Icons.logout)),
@@ -428,6 +484,31 @@ class _HomePageState extends State<HomePage> {
                             )),
 
                         SizedBox(height: 10),
+                        // Current location display
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.place_rounded,
+                              color: Colors.white,
+                            ),
+                            Flexible(
+                              child: Column(children: [
+                                Text(
+                                  _currentAddress.isNotEmpty
+                                      ? _currentAddress
+                                      : 'unknown',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                  ),
+                                  softWrap: true,
+                                  overflow: TextOverflow.fade,
+                                ),
+                              ]),
+                            ),
+                          ],
+                        ),
 
                         // Timer display
                         Text('$digitHours:$digitMinutes:$digitSeconds',
@@ -442,9 +523,7 @@ class _HomePageState extends State<HomePage> {
                             onPressed: () async {
                               _currentLocation = await _getCurrentLocation();
                               await _getAddressFromCoordinates();
-
-                              print('$_currentLocation');
-                              print(_currentAddress);
+                              //print(_currentAddress);
 
                               (!started) ? startTimer() : stopTimer();
                             },
@@ -484,32 +563,19 @@ class _HomePageState extends State<HomePage> {
                               style: TextStyle(fontSize: 16.0),
                             )),
 
+                        // Button to add place name
+                        /* TextButton(
+                          onPressed: showPlaceDialog(context),
+                          style: TextButton.styleFrom(
+                              disabledForegroundColor: Colors.grey,
+                              foregroundColor: (!started)
+                                  ? Color.fromRGBO(64, 46, 50, 1)
+                                  : Color.fromRGBO(250, 195, 32, 1),
+                            ),
+                          child: Text('Add Place Name')
+                          ),
+ */
                         SizedBox(height: 10),
-                        // Current location display
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.place_rounded,
-                              color: Colors.white,
-                            ),
-                            Flexible(
-                              child: Column(children: [
-                                Text(
-                                  _currentAddress.isNotEmpty
-                                      ? _currentAddress
-                                      : 'unknown',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                  ),
-                                  softWrap: true,
-                                  overflow: TextOverflow.fade,
-                                ),
-                              ]),
-                            ),
-                          ],
-                        ),
 
                         // total hours worked card
                         Padding(
@@ -520,19 +586,26 @@ class _HomePageState extends State<HomePage> {
                                 color: Color.fromARGB(255, 73, 53, 57),
                                 borderRadius: BorderRadius.circular(10.0)),
 
-                            // simple view list of shifts
+                            // simple view list of last 5 shifts
                             child: ListView.builder(
-                              itemCount: value.getAllShifts().length,
-                              itemBuilder: (context, index) => ListTile(
-                                  title: Text(
-                                      value.getAllShifts()[index].placeName)),
+                              reverse: true,
+                              itemCount: value.getAllShifts().length < 5
+                                  ? value.getAllShifts().length
+                                  : 5,
+                              itemBuilder: (context, index) => ShiftTile(
+                                  placeName:
+                                      value.getAllShifts()[index].placeName,
+                                  dateTime:
+                                      value.getAllShifts()[index].dateTime,
+                                  workedTime:
+                                      value.getAllShifts()[index].workedTime),
                             ),
                           ),
                         ),
                       ],
                     )),
                   ),
-                  // timesheet tab
+                  // WOrkbook tab
                   Center(
                     child: Text("shift tiles, bar graph, trigger email"),
                   ),

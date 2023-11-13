@@ -10,7 +10,7 @@ Currently built for android only.
 Once you have forked this repository onto your local device please do the following:
 
 * Download and install vscode IDE
-* If you want to run app on virtual device: download and install android studio and [create an emulator device](https://youtu.be/q-3r85fl-g4?si=4ozX1hdjAkgHQuE3) otherwise if you want to run app on physical device: connect usb cable and [set android device to debugging mode](https://youtu.be/aohkII1C4JY?si=33vqM9sMLxwOu0GS) 
+* If you want to run app on virtual device: download and install android studio and [create an emulator device](https://youtu.be/q-3r85fl-g4?si=4ozX1hdjAkgHQuE3) otherwise if you want to run app on physical device (faster): connect usb cable and [set android device to debugging mode](https://youtu.be/aohkII1C4JY?si=33vqM9sMLxwOu0GS) 
 * Download and install flutter SDK in vscode
 * Open this project in vscode. In the terminal, make sure your filepath is in the project and get dependencies `flutter pub get`
 * Make sure in vscode you have emulator or device set up and ready to run the app (selected device should be displayed in the bottom right corner)
