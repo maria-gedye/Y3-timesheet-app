@@ -171,7 +171,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   // user to enter place name when stopping timer
-  void showPlaceDialog() {
+  void openPlaceDialog() {
     showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -193,6 +193,8 @@ class _HomePageState extends State<HomePage> {
                 MaterialButton(
                   onPressed: () {
                     savePlaceDialog();
+                    Navigator.pop(context);
+                    clear();
                   },
                   child: const Text('Save'),
                 ),
@@ -204,8 +206,6 @@ class _HomePageState extends State<HomePage> {
               ],
             ));
 
-    Navigator.pop(context);
-    clear();
   }
 
   void savePlaceDialog() {
@@ -306,29 +306,28 @@ class _HomePageState extends State<HomePage> {
   }
 
   // timepicker method -- needs to also store start/end times to calc duration
- Future<void> _selectTime(final controller) async {
-  final TimeOfDay? getTime = await showTimePicker(
-    context: context,
-    initialTime: TimeOfDay.now(),
-    initialEntryMode: TimePickerEntryMode.dial,
-  );
+  Future<void> _selectTime(final controller) async {
+    final TimeOfDay? getTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+      initialEntryMode: TimePickerEntryMode.dial,
+    );
 
-  if (getTime != null) {
-    setState(() {
-      if (startTimeDialog != TimeOfDay(hour: 0, minute: 0)) {
-        endTimeDialog = getTime;
-      } else {
-        startTimeDialog = getTime;
-      }
+    if (getTime != null) {
+      setState(() {
+        if (startTimeDialog != TimeOfDay(hour: 0, minute: 0)) {
+          endTimeDialog = getTime;
+        } else {
+          startTimeDialog = getTime;
+        }
 
-      // Update text in controller after setting TimeOfDay variable
-      String newTimeText =
-          "${getTime.hour}:${getTime.minute} ${getTime.period.name}";
-      controller.text = newTimeText;
-    });
+        // Update text in controller after setting TimeOfDay variable
+        String newTimeText =
+            "${getTime.hour}:${getTime.minute} ${getTime.period.name}";
+        controller.text = newTimeText;
+      });
+    }
   }
-}
-
 
   // clear the controllers (for dialog)
   void clear() {
@@ -571,17 +570,18 @@ class _HomePageState extends State<HomePage> {
                             )),
 
                         // Button to add place name
-                        /* TextButton(
-                          onPressed: showPlaceDialog(context),
-                          style: TextButton.styleFrom(
+                        TextButton(
+                            onPressed: () {
+                              openPlaceDialog();
+                            },
+                            style: TextButton.styleFrom(
                               disabledForegroundColor: Colors.grey,
                               foregroundColor: (!started)
                                   ? Color.fromRGBO(64, 46, 50, 1)
-                                  : Color.fromRGBO(250, 195, 32, 1),
+                                  : Colors.white,
                             ),
-                          child: Text('Add Place Name')
-                          ),
- */
+                            child: Text('Add Place Name')),
+
                         SizedBox(height: 10),
 
                         // total hours worked card
