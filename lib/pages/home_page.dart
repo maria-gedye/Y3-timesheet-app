@@ -42,11 +42,10 @@ class _HomePageState extends State<HomePage> {
   final newEndTimeController = TextEditingController();
   late DateTime pickedDate = DateTime(2023, 0, 0, 0, 0);
   String startTime = '', endTime = '';
-  TimeOfDay thisTime = TimeOfDay(hour: 0, minute: 0);
   TimeOfDay startTimeDialog = TimeOfDay(hour: 0, minute: 0);
   TimeOfDay endTimeDialog = TimeOfDay(hour: 0, minute: 0);
 
-// state methods...
+// state methods(14+)
 
   //sign user out method
   void signUserOut() {
@@ -156,6 +155,21 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  // put info into new shift object then save to list
+  void saveTracker() {
+    // create shift_item object via timetracker
+    ShiftItem newShift = ShiftItem(
+      placeName: place,
+      address: _currentAddress,
+      startTime: startTime,
+      endTime: endTime,
+      workedTime: _currentDuration,
+      dateTime: DateTime.now(),
+    );
+    // add new shift from shift_data.dart
+    Provider.of<ShiftData>(context, listen: false).addNewShift(newShift);
+  }
+
   // user to enter place name when stopping timer
   void showPlaceDialog() {
     showDialog(
@@ -191,25 +205,11 @@ class _HomePageState extends State<HomePage> {
             ));
 
     Navigator.pop(context);
+    clear();
   }
 
   void savePlaceDialog() {
     place = newPlaceController.text;
-  }
-
-  // put info into new shift object then save to list
-  void saveTracker() {
-    // create shift_item object via timetracker
-    ShiftItem newShift = ShiftItem(
-      placeName: place,
-      address: _currentAddress,
-      startTime: startTime,
-      endTime: endTime,
-      workedTime: _currentDuration,
-      dateTime: DateTime.now(),
-    );
-    // add new shift from shift_data.dart
-    Provider.of<ShiftData>(context, listen: false).addNewShift(newShift);
   }
 
   // add shift dialog functions(5)
@@ -306,32 +306,29 @@ class _HomePageState extends State<HomePage> {
   }
 
   // timepicker method -- needs to also store start/end times to calc duration
-  Future<void> _selectTime(final controller) async {
-    final TimeOfDay? getTime = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now(),
-      initialEntryMode: TimePickerEntryMode.dial,
-    );
+ Future<void> _selectTime(final controller) async {
+  final TimeOfDay? getTime = await showTimePicker(
+    context: context,
+    initialTime: TimeOfDay.now(),
+    initialEntryMode: TimePickerEntryMode.dial,
+  );
 
-    if (getTime != null) {
+  if (getTime != null) {
+    setState(() {
       if (startTimeDialog != TimeOfDay(hour: 0, minute: 0)) {
-        setState(() {
-          endTimeDialog = getTime;
-          String newTimeText =
-              "${getTime.hour}:${getTime.minute} ${getTime.period.name}";
-          controller.text = newTimeText;
-        });
-
+        endTimeDialog = getTime;
       } else {
-        setState(() {
-          startTimeDialog = getTime;
-          String newTimeText =
-              "${getTime.hour}:${getTime.minute} ${getTime.period.name}";
-          controller.text = newTimeText;
-        });
+        startTimeDialog = getTime;
       }
-    }
+
+      // Update text in controller after setting TimeOfDay variable
+      String newTimeText =
+          "${getTime.hour}:${getTime.minute} ${getTime.period.name}";
+      controller.text = newTimeText;
+    });
   }
+}
+
 
   // clear the controllers (for dialog)
   void clear() {
@@ -340,6 +337,9 @@ class _HomePageState extends State<HomePage> {
     newEndTimeController.clear();
     newStartTimeController.clear();
     newPlaceController.clear();
+
+    startTimeDialog = TimeOfDay(hour: 0, minute: 0);
+    endTimeDialog = TimeOfDay(hour: 0, minute: 0);
   }
 
   // cancel the dialog
@@ -350,8 +350,14 @@ class _HomePageState extends State<HomePage> {
 
   // calculate duration between two user input times
   TimeOfDay calculateTimeDuration(TimeOfDay startTime, TimeOfDay endTime) {
-    int startMinutes = startTime.hourOfPeriod * 60 + startTime.minute;
-    int endMinutes = endTime.hourOfPeriod * 60 + endTime.minute;
+    int startMinutes = startTime.hour * 60 + startTime.minute;
+    int endMinutes = endTime.hour * 60 + endTime.minute;
+
+    // Check if the end time is earlier than the start time (indicating it's on the next day)
+    if (endMinutes < startMinutes) {
+      endMinutes += 24 * 60; // Add 24 hours to account for the next day
+    }
+
     int durationInMinutes = (endMinutes - startMinutes).abs();
 
     int hours = durationInMinutes ~/ 60;
@@ -367,6 +373,7 @@ class _HomePageState extends State<HomePage> {
         'start time before calculation: $startTimeDialog end time before calc: $endTimeDialog');
 
     TimeOfDay duration = calculateTimeDuration(startTimeDialog, endTimeDialog);
+    print('after duration call: $duration');
     String workedTime = '${duration.hour}hrs ${duration.minute}min';
 
     // create shift_item object via dialog
