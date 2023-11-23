@@ -28,3 +28,20 @@ Once you have forked this repository onto your local device please do the follow
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+
+
+## Issues I am already aware of
+
+If you actually made it this far, well done! I am happy somebody is appreciating my efforts. While all devs try their best to have
+a 100% bug free experience (wow at the rubric metrics!), it is kinda impossible (just look @ Microsoft office) so here are some `bugs` I caught while making demos:
+
+*  every user sees everyones saved shifts (when ideally it should be current user sees only their information)
+
+*  timer has to run for at least a minute in order to be saved on tracker (home) screen (does not save to firestore)
+
+*  only the manual add shift method (the circular `+` button) stores to firestore(database)
+
+*  loading circle doesn't pop properly when signing in (needs person to tap on screen)
+
+
+

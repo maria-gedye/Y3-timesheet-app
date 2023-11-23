@@ -176,6 +176,7 @@ class _HomePageState extends State<HomePage> {
         context: context,
         builder: (context) => AlertDialog(
               title: const Text('Enter Place'),
+              backgroundColor: Color.fromRGBO(250, 195, 32, 1),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -217,6 +218,7 @@ class _HomePageState extends State<HomePage> {
         context: context,
         builder: (context) => AlertDialog(
               title: const Text('Add Shift'),
+              backgroundColor: Color.fromRGBO(250, 195, 32, 1),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -224,6 +226,7 @@ class _HomePageState extends State<HomePage> {
                     // place name
                     TextField(
                       controller: newPlaceController,
+                      style: TextStyle(fontWeight: FontWeight.bold),
                       decoration:
                           const InputDecoration(labelText: 'Place Name'),
                     ),
@@ -238,6 +241,7 @@ class _HomePageState extends State<HomePage> {
                     // date picker
                     TextField(
                       controller: newDateController,
+                      style: TextStyle(fontWeight: FontWeight.bold),
                       decoration:
                           const InputDecoration(labelText: 'Select date'),
                       readOnly: true,
@@ -249,7 +253,8 @@ class _HomePageState extends State<HomePage> {
                     // start time - time picker
                     TextField(
                       controller: newStartTimeController,
-                      readOnly: true,
+                      readOnly: true,                
+                      style: TextStyle(fontWeight: FontWeight.bold),
                       decoration:
                           const InputDecoration(labelText: 'Start Time'),
                       onTap: () => {
@@ -261,6 +266,7 @@ class _HomePageState extends State<HomePage> {
                     TextField(
                       controller: newEndTimeController,
                       readOnly: true,
+                      style: TextStyle(fontWeight: FontWeight.bold),
                       decoration: const InputDecoration(labelText: 'End Time'),
                       onTap: () => {
                         _selectTime(newEndTimeController),
