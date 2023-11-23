@@ -5,7 +5,6 @@ import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:timesheet_app/components/shift_tile.dart';
 import 'dart:async';
-import 'package:timesheet_app/components/work_shift.dart';
 import 'package:provider/provider.dart';
 import 'package:timesheet_app/data/shift_data.dart';
 import 'package:timesheet_app/models/shift_item.dart';
@@ -24,6 +23,7 @@ class _HomePageState extends State<HomePage> {
   late bool servicePermission = false;
   late LocationPermission permission;
   String _currentAddress = '', _currentDuration = '';
+  String titleOfTab = 'Shift Tracker';
 
 // timer variables
   int seconds = 0, minutes = 0, hours = 0;
@@ -32,7 +32,7 @@ class _HomePageState extends State<HomePage> {
   bool started = false;
   List shifts = [];
   int currentPageIndex = 0;
-  String place = '';
+  String placeNameStr = 'Add place name';
 
   // add shift dialog variables
   final newPlaceController = TextEditingController();
@@ -159,7 +159,7 @@ class _HomePageState extends State<HomePage> {
   void saveTracker() {
     // create shift_item object via timetracker
     ShiftItem newShift = ShiftItem(
-      placeName: place,
+      placeName: placeNameStr,
       address: _currentAddress,
       startTime: startTime,
       endTime: endTime,
@@ -170,7 +170,7 @@ class _HomePageState extends State<HomePage> {
     Provider.of<ShiftData>(context, listen: false).addNewShift(newShift);
   }
 
-  // user to enter place name when stopping timer
+  // user to enter place name before stopping timer
   void openPlaceDialog() {
     showDialog(
         context: context,
@@ -205,11 +205,10 @@ class _HomePageState extends State<HomePage> {
                 ),
               ],
             ));
-
   }
 
   void savePlaceDialog() {
-    place = newPlaceController.text;
+    placeNameStr = newPlaceController.text;
   }
 
   // add shift dialog functions(5)
@@ -367,10 +366,7 @@ class _HomePageState extends State<HomePage> {
 
   // put info into new shift object then save to list
   void saveDialog(DateTime newDate) {
-    // find difference between two timeOfDay objects
-    print(
-        'start time before calculation: $startTimeDialog end time before calc: $endTimeDialog');
-
+    // calculate duration (find difference between two timeOfDay objects)
     TimeOfDay duration = calculateTimeDuration(startTimeDialog, endTimeDialog);
     print('after duration call: $duration');
     String workedTime = '${duration.hour}hrs ${duration.minute}min';
@@ -383,8 +379,18 @@ class _HomePageState extends State<HomePage> {
         endTime: newEndTimeController.text,
         workedTime: workedTime,
         dateTime: newDate);
+
     // add new shift from shift_data.dart
     Provider.of<ShiftData>(context, listen: false).addNewShift(newShift);
+
+    if (newShift.startTime.isNotEmpty && newShift.endTime.isNotEmpty) {
+      // store in firebase
+      FirebaseFirestore.instance.collection("User Shifts").add({
+        'PlaceName': newShift.placeName,
+        'WorkedTime': newShift.workedTime,
+        'DateTime': newShift.dateTime
+      });
+    }
 
     print(
         'start: ${newShift.startTime}, end: ${newShift.endTime}, total: ${newShift.workedTime}');
@@ -409,16 +415,19 @@ class _HomePageState extends State<HomePage> {
               backgroundColor: Color.fromRGBO(64, 46, 50, 1),
               appBar: AppBar(
                 // TODO: change titles as user selects different tabs
-                title: const Text('Shift Tracker'),
+                title: Text(titleOfTab),
                 backgroundColor: Color.fromRGBO(64, 46, 50, 1),
                 actions: [
-                  IconButton(onPressed: signUserOut, icon: Icon(Icons.logout)),
+                  IconButton(
+                      onPressed: () {},
+                      tooltip: 'settings',
+                      icon: Icon(Icons.settings)),
                 ],
                 bottom: const TabBar(
                   tabs: <Widget>[
                     Tab(
                       icon: Icon(Icons.person_2_rounded,
-                          color: Colors.white, size: 30),
+                          color: Color.fromRGBO(164, 142, 101, 1), size: 30),
                     ),
                     Tab(
                       icon: Icon(
@@ -429,7 +438,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                     Tab(
                       icon: Icon(Icons.menu_book_rounded,
-                          color: Colors.white, size: 30),
+                          color: Color.fromRGBO(164, 142, 101, 1), size: 30),
                     ),
                   ],
                 ),
@@ -438,41 +447,24 @@ class _HomePageState extends State<HomePage> {
               // main body
               body: SafeArea(
                 child: TabBarView(children: <Widget>[
-                  // access to firebase firestore
-                  /*  Expanded(
-                      child: StreamBuilder(
-                    stream: FirebaseFirestore.instance
-                        .collection("User Shifts")
-                        .orderBy("Timestamp", descending: false)
-                        .snapshots(),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData) {
-                        // TODO: somehow bring this RETURN block into third tab...
-                        return ListView.builder(
-                          itemCount: 0,
-                          itemBuilder: (context, index) {
-                            // get the shift_item from db
-                            final shift = snapshot.data!.docs[index];
-                            return WorkShift(
-                                date: shift['DateTime'],
-                                duration: shift['WorkedTime'],
-                                place: shift['PlaceName']);
-                          },
-                        );
-                      } else if (snapshot.hasError) {
-                        return Center(
-                          child: Text('Error: ${snapshot.error}'),
-                        );
-                      }
-                      return const Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    },
-                  )), */
-
                   // user tab
                   Center(
-                    child: Text("user page"),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "Logged in as ${user.email!}",
+                          style: TextStyle(color: Colors.white, fontSize: 18),
+                        ),
+                        SizedBox(height: 20),
+                        IconButton(
+                          onPressed: signUserOut,
+                          icon: Icon(Icons.logout),
+                          color: Colors.white,
+                          iconSize: 30,
+                        ),
+                      ],
+                    ),
                   ),
                   // tracker tab
                   Center(
@@ -490,6 +482,7 @@ class _HomePageState extends State<HomePage> {
                             )),
 
                         SizedBox(height: 10),
+
                         // Current location display
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -524,6 +517,7 @@ class _HomePageState extends State<HomePage> {
                             )),
 
                         SizedBox(height: 10),
+
                         // clock in button
                         ElevatedButton(
                             onPressed: () async {
@@ -580,7 +574,7 @@ class _HomePageState extends State<HomePage> {
                                   ? Color.fromRGBO(64, 46, 50, 1)
                                   : Colors.white,
                             ),
-                            child: Text('Add Place Name')),
+                            child: Text(placeNameStr)),
 
                         SizedBox(height: 10),
 
@@ -592,20 +586,22 @@ class _HomePageState extends State<HomePage> {
                             decoration: BoxDecoration(
                                 color: Color.fromARGB(255, 73, 53, 57),
                                 borderRadius: BorderRadius.circular(10.0)),
-
-                            // simple view list of last 5 shifts
-                            child: ListView.builder(
-                              reverse: true,
-                              itemCount: value.getAllShifts().length < 5
-                                  ? value.getAllShifts().length
-                                  : 5,
-                              itemBuilder: (context, index) => ShiftTile(
-                                  placeName:
-                                      value.getAllShifts()[index].placeName,
-                                  dateTime:
-                                      value.getAllShifts()[index].dateTime,
-                                  workedTime:
-                                      value.getAllShifts()[index].workedTime),
+                            child: Align(
+                              alignment: Alignment.topCenter,
+                              // simple view list of last 5 shifts
+                              child: ListView.builder(
+                                reverse: true,
+                                shrinkWrap: true,
+                                itemCount: value.getAllShifts().length < 5
+                                    ? value.getAllShifts().length
+                                    : 5,
+                                itemBuilder: (context, index) => ShiftTile(
+                                    placeName:
+                                        value.getAllShifts()[index].placeName,
+                                    shiftDate: '0',
+                                    workedTime:
+                                        value.getAllShifts()[index].workedTime),
+                              ),
                             ),
                           ),
                         ),
@@ -614,7 +610,41 @@ class _HomePageState extends State<HomePage> {
                   ),
                   // WOrkbook tab
                   Center(
-                    child: Text("shift tiles, bar graph, trigger email"),
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: StreamBuilder(
+                        stream: FirebaseFirestore.instance
+                            .collection("User Shifts")
+                            .orderBy("DateTime", descending: false)
+                            .snapshots(),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            return ListView.builder(
+                              itemCount: snapshot.data!.docs.length,
+                              itemBuilder: (context, index) {
+                                // get the User Shift from db
+                                final shift = snapshot.data!.docs[index];
+                                print(shift.data().entries);
+                                  return ShiftTile(
+                                    placeName: shift['PlaceName'],
+                                    workedTime: shift['WorkedTime'],
+                                    shiftDate: shift['DateTime'].toString(),
+                                  ); 
+                              },
+                            );
+                            // check for any errors
+                          } else if (snapshot.hasError) {
+                            return Center(
+                              child: Text('Error: ${snapshot.error}'),
+                            );
+                          }
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        },
+                      )),]
+                  ),
                   ),
                 ]),
               ))),
