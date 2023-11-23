@@ -4,7 +4,9 @@ This is my first flutter app which is my submission for the Yoobee assessment CS
 
 Currently built for android only.
 
-## Getting Started
+## INSTALLATION GUIDE   (˵ ͡° ͜ʖ ͡°˵)
+this title explicitly lets you know that you are about to read an installation guide I created so you can run my MVP application 
+(˵ ͡° ͜ʖ ͡°˵)
 
 ### Instructions for running this project (for moderators, supervisors, tutors)
 Once you have forked this repository onto your local device please do the following:
