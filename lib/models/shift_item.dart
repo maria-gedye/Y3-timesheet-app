@@ -4,7 +4,7 @@ class ShiftItem {
   final String workedTime;
   final String startTime;
   final String endTime;
-  final DateTime dateTime;
+  final String dateTime;
 
   ShiftItem({
     required this.placeName,

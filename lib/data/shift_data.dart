@@ -81,8 +81,10 @@ class ShiftData extends ChangeNotifier {
     }
 
     for (var shift in overallShiftList) {
-      String startWeekDate =
-          convertDateTimeToSTring(getStartOfWeekDate(shift.dateTime));
+      String dateStr = shift.dateTime;
+      DateTime dateTime = DateTime.parse(dateStr);
+
+      String startWeekDate = convertDateTimeToSTring(getStartOfWeekDate(dateTime)); 
       double hours = double.parse(
           shift.workedTime); // turn string into double to do the math
 

@@ -8,6 +8,7 @@ import 'dart:async';
 import 'package:provider/provider.dart';
 import 'package:timesheet_app/data/shift_data.dart';
 import 'package:timesheet_app/models/shift_item.dart';
+import 'package:intl/intl.dart'; // for timestamp casting?
 
 class HomePage extends StatefulWidget {
   HomePage({super.key});
@@ -40,8 +41,7 @@ class _HomePageState extends State<HomePage> {
   final newDateController = TextEditingController();
   final newStartTimeController = TextEditingController();
   final newEndTimeController = TextEditingController();
-  late DateTime pickedDate = DateTime(2023, 0, 0, 0, 0);
-  String startTime = '', endTime = '';
+  String pickedDate = '', startTime = '', endTime = '';
   TimeOfDay startTimeDialog = TimeOfDay(hour: 0, minute: 0);
   TimeOfDay endTimeDialog = TimeOfDay(hour: 0, minute: 0);
 
@@ -164,7 +164,7 @@ class _HomePageState extends State<HomePage> {
       startTime: startTime,
       endTime: endTime,
       workedTime: _currentDuration,
-      dateTime: DateTime.now(),
+      dateTime: DateTime.now().toString(),
     );
     // add new shift from shift_data.dart
     Provider.of<ShiftData>(context, listen: false).addNewShift(newShift);
@@ -253,7 +253,7 @@ class _HomePageState extends State<HomePage> {
                     // start time - time picker
                     TextField(
                       controller: newStartTimeController,
-                      readOnly: true,                
+                      readOnly: true,
                       style: TextStyle(fontWeight: FontWeight.bold),
                       decoration:
                           const InputDecoration(labelText: 'Start Time'),
@@ -304,7 +304,7 @@ class _HomePageState extends State<HomePage> {
 
     if (picked != null) {
       setState(() {
-        pickedDate = picked;
+        pickedDate = picked.toString();
         newDateController.text = picked.toString().split(" ")[0];
       });
     }
@@ -371,10 +371,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   // put info into new shift object then save to list
-  void saveDialog(DateTime newDate) {
+  void saveDialog(String newDate) {
     // calculate duration (find difference between two timeOfDay objects)
     TimeOfDay duration = calculateTimeDuration(startTimeDialog, endTimeDialog);
-    print('after duration call: $duration');
     String workedTime = '${duration.hour}hrs ${duration.minute}min';
 
     // create shift_item object via dialog
@@ -604,7 +603,8 @@ class _HomePageState extends State<HomePage> {
                                 itemBuilder: (context, index) => ShiftTile(
                                     placeName:
                                         value.getAllShifts()[index].placeName,
-                                    shiftDate: '0',
+                                    shiftDate:
+                                        value.getAllShifts()[index].dateTime,
                                     workedTime:
                                         value.getAllShifts()[index].workedTime),
                               ),
@@ -616,9 +616,8 @@ class _HomePageState extends State<HomePage> {
                   ),
                   // WOrkbook tab
                   Center(
-                    child: Column(
-                      children: [
-                        Expanded(
+                    child: Column(children: [
+                      Expanded(
                           child: StreamBuilder(
                         stream: FirebaseFirestore.instance
                             .collection("User Shifts")
@@ -631,12 +630,22 @@ class _HomePageState extends State<HomePage> {
                               itemBuilder: (context, index) {
                                 // get the User Shift from db
                                 final shift = snapshot.data!.docs[index];
+//TODO
+                                //conversion of firestore timestamp(sec/nano sec) into a DateTime value
+                                Timestamp timestamp = shift[
+                                    'DateTime']; // obj w seconds and nano seconds
+
+                                DateTime dateTime = timestamp.toDate();
+
+                                String dateStr = "${dateTime.day}/${dateTime.month}/${dateTime.year}";
+
                                 print(shift.data().entries);
-                                  return ShiftTile(
-                                    placeName: shift['PlaceName'],
-                                    workedTime: shift['WorkedTime'],
-                                    shiftDate: shift['DateTime'].toString(),
-                                  ); 
+                                return ShiftTile(
+                                  placeName: shift['PlaceName'],
+                                  workedTime: shift['WorkedTime'],
+                                  // this needs reformatting somehow
+                                  shiftDate: dateStr,
+                                );
                               },
                             );
                             // check for any errors
@@ -649,8 +658,8 @@ class _HomePageState extends State<HomePage> {
                             child: CircularProgressIndicator(),
                           );
                         },
-                      )),]
-                  ),
+                      )),
+                    ]),
                   ),
                 ]),
               ))),
