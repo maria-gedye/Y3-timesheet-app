@@ -1,0 +1,191 @@
+@startuml
+set namespaceSeparator ::
+
+class "timesheet_app::components::my_button.dart::MyButton" {
+  +dynamic Function()? onTap
+  +String text
+  +Widget build()
+}
+
+"timesheet_app::components::my_button.dart::MyButton" o-- "null::dynamic Function()"
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "timesheet_app::components::my_button.dart::MyButton"
+
+class "timesheet_app::components::my_textfield.dart::MyTextField" {
+  +dynamic controller
+  +String hintText
+  +bool obscureText
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "timesheet_app::components::my_textfield.dart::MyTextField"
+
+class "timesheet_app::components::shift_tile.dart::ShiftTile" {
+  +String shiftDate
+  +String placeName
+  +String workedTime
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "timesheet_app::components::shift_tile.dart::ShiftTile"
+
+class "timesheet_app::data::shift_data.dart::ShiftData" {
+  +List<ShiftItem> overallShiftList
+  +List<ShiftItem> getAllShifts()
+  +void addNewShift()
+  +void deleteShift()
+  +String getDayName()
+  +DateTime startOfWeekDate()
+  +Map<String, double> calculateWeeklyWorkSummary()
+}
+
+"flutter::src::foundation::change_notifier.dart::ChangeNotifier" <|-- "timesheet_app::data::shift_data.dart::ShiftData"
+
+class "timesheet_app::firebase_options.dart::DefaultFirebaseOptions" {
+  {static} +FirebaseOptions web
+  {static} +FirebaseOptions android
+  {static} +FirebaseOptions ios
+  {static} +FirebaseOptions macos
+  {static} +FirebaseOptions currentPlatform
+}
+
+"timesheet_app::firebase_options.dart::DefaultFirebaseOptions" o-- "firebase_core_platform_interface::firebase_core_platform_interface.dart::FirebaseOptions"
+
+class "timesheet_app::main.dart::MyApp" {
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "timesheet_app::main.dart::MyApp"
+
+class "timesheet_app::models::shift_item.dart::ShiftItem" {
+  +String placeName
+  +String address
+  +String workedTime
+  +String startTime
+  +String endTime
+  +String dateTime
+}
+
+class "timesheet_app::pages::auth_page.dart::AuthPage" {
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "timesheet_app::pages::auth_page.dart::AuthPage"
+
+class "timesheet_app::pages::home_page.dart::HomePage" {
+  +State<HomePage> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "timesheet_app::pages::home_page.dart::HomePage"
+
+class "timesheet_app::pages::home_page.dart::_HomePageState" {
+  +User user
+  -Position? _currentLocation
+  +bool servicePermission
+  +LocationPermission permission
+  -String _currentAddress
+  -String _currentDuration
+  +String titleOfTab
+  +int seconds
+  +int minutes
+  +int hours
+  +String digitSeconds
+  +String digitMinutes
+  +String digitHours
+  +Timer? timer
+  +bool started
+  +List<dynamic> shifts
+  +int currentPageIndex
+  +String placeNameStr
+  +TextEditingController newPlaceController
+  +TextEditingController newAddressController
+  +TextEditingController newDateController
+  +TextEditingController newStartTimeController
+  +TextEditingController newEndTimeController
+  +String pickedDate
+  +String startTime
+  +String endTime
+  +TimeOfDay startTimeDialog
+  +TimeOfDay endTimeDialog
+  +void signUserOut()
+  -Future<Position> _getCurrentLocation()
+  -dynamic _getAddressFromCoordinates()
+  +void stopTimer()
+  +void reset()
+  +void timerDuration()
+  +void startTimer()
+  +void saveTracker()
+  +void openPlaceDialog()
+  +void savePlaceDialog()
+  +void addShiftDialog()
+  -Future<void> _selectDate()
+  -Future<void> _selectTime()
+  +void clear()
+  +void cancel()
+  +TimeOfDay calculateTimeDuration()
+  +void saveDialog()
+  +Widget build()
+}
+
+"timesheet_app::pages::home_page.dart::_HomePageState" o-- "firebase_auth::firebase_auth.dart::User"
+"timesheet_app::pages::home_page.dart::_HomePageState" o-- "geolocator_platform_interface::src::models::position.dart::Position"
+"timesheet_app::pages::home_page.dart::_HomePageState" o-- "geolocator_platform_interface::src::enums::location_permission.dart::LocationPermission"
+"timesheet_app::pages::home_page.dart::_HomePageState" o-- "dart::async::Timer"
+"timesheet_app::pages::home_page.dart::_HomePageState" o-- "flutter::src::widgets::editable_text.dart::TextEditingController"
+"timesheet_app::pages::home_page.dart::_HomePageState" o-- "flutter::src::material::time.dart::TimeOfDay"
+"flutter::src::widgets::framework.dart::State" <|-- "timesheet_app::pages::home_page.dart::_HomePageState"
+
+class "timesheet_app::pages::login_or_register_page.dart::LoginOrRegisterPage" {
+  +State<LoginOrRegisterPage> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "timesheet_app::pages::login_or_register_page.dart::LoginOrRegisterPage"
+
+class "timesheet_app::pages::login_or_register_page.dart::_LoginOrRegisterPageState" {
+  +bool showLoginPage
+  +void togglePages()
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::State" <|-- "timesheet_app::pages::login_or_register_page.dart::_LoginOrRegisterPageState"
+
+class "timesheet_app::pages::login_page.dart::LoginPage" {
+  +dynamic Function()? onTap
+  +State<LoginPage> createState()
+}
+
+"timesheet_app::pages::login_page.dart::LoginPage" o-- "null::dynamic Function()"
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "timesheet_app::pages::login_page.dart::LoginPage"
+
+class "timesheet_app::pages::login_page.dart::_LoginPageState" {
+  +TextEditingController emailController
+  +TextEditingController passwordController
+  +void signUserIn()
+  +void showErrorMessage()
+  +Widget build()
+}
+
+"timesheet_app::pages::login_page.dart::_LoginPageState" o-- "flutter::src::widgets::editable_text.dart::TextEditingController"
+"flutter::src::widgets::framework.dart::State" <|-- "timesheet_app::pages::login_page.dart::_LoginPageState"
+
+class "timesheet_app::pages::register_page.dart::RegisterPage" {
+  +dynamic Function()? onTap
+  +State<RegisterPage> createState()
+}
+
+"timesheet_app::pages::register_page.dart::RegisterPage" o-- "null::dynamic Function()"
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "timesheet_app::pages::register_page.dart::RegisterPage"
+
+class "timesheet_app::pages::register_page.dart::_RegisterPageState" {
+  +TextEditingController emailController
+  +TextEditingController passwordController
+  +TextEditingController confirmedPasswordController
+  +void signUserIn()
+  +void showErrorMessage()
+  +Widget build()
+}
+
+"timesheet_app::pages::register_page.dart::_RegisterPageState" o-- "flutter::src::widgets::editable_text.dart::TextEditingController"
+"flutter::src::widgets::framework.dart::State" <|-- "timesheet_app::pages::register_page.dart::_RegisterPageState"
+
+
+@enduml
