@@ -3,15 +3,17 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:timesheet_app/components/my_textfield.dart';
 import 'package:timesheet_app/components/shift_tile.dart';
+import 'package:timesheet_app/components/shift_dialog.dart';
 import 'dart:async';
 import 'package:provider/provider.dart';
 import 'package:timesheet_app/data/shift_data.dart';
 import 'package:timesheet_app/models/shift_item.dart';
-import 'package:intl/intl.dart'; // for timestamp casting?
 
 class HomePage extends StatefulWidget {
   HomePage({super.key});
+  //bool manualShift = false;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -19,12 +21,12 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
 // state variables...
-  final user = FirebaseAuth.instance.currentUser!;
   Position? _currentLocation;
   late bool servicePermission = false;
   late LocationPermission permission;
   String _currentAddress = '', _currentDuration = '';
   String titleOfTab = 'Shift Tracker';
+  final newPlaceController = TextEditingController();
 
 // timer variables
   int seconds = 0, minutes = 0, hours = 0;
@@ -34,18 +36,12 @@ class _HomePageState extends State<HomePage> {
   List shifts = [];
   int currentPageIndex = 0;
   String placeNameStr = 'Add place name';
+  String endTime = '', startTime = '';
 
-  // add shift dialog variables
-  final newPlaceController = TextEditingController();
-  final newAddressController = TextEditingController();
-  final newDateController = TextEditingController();
-  final newStartTimeController = TextEditingController();
-  final newEndTimeController = TextEditingController();
-  String pickedDate = '', startTime = '', endTime = '';
-  TimeOfDay startTimeDialog = TimeOfDay(hour: 0, minute: 0);
-  TimeOfDay endTimeDialog = TimeOfDay(hour: 0, minute: 0);
-
-// state methods(14+)
+  // FAB Icons
+  //List<IconData>? icons = const [Icons.add, Icons.document_scanner_rounded];
+  //final int _selectedIndex = 1;
+  final user = FirebaseAuth.instance.currentUser!;
 
   //sign user out method
   void signUserOut() {
@@ -155,7 +151,7 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  // put info into new shift object then save to list
+  // put info into new shift object then save to overallShiftList []
   void saveTracker() {
     // create shift_item object via timetracker
     ShiftItem newShift = ShiftItem(
@@ -166,8 +162,8 @@ class _HomePageState extends State<HomePage> {
       workedTime: _currentDuration,
       dateTime: DateTime.now().toString(),
     );
-    // add new shift from shift_data.dart
-    Provider.of<ShiftData>(context, listen: false).addNewShift(newShift);
+
+    sendShiftToDB(newShift); // saves new obj to firebase
   }
 
   // user to enter place name before stopping timer
@@ -181,11 +177,10 @@ class _HomePageState extends State<HomePage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    TextField(
-                      controller: newPlaceController,
-                      decoration:
-                          const InputDecoration(labelText: 'Place Name'),
-                    ),
+                    MyTextField(
+                        controller: newPlaceController,
+                        hintText: 'Place Name',
+                        obscureText: false)
                   ],
                 ),
               ),
@@ -195,13 +190,16 @@ class _HomePageState extends State<HomePage> {
                   onPressed: () {
                     savePlaceDialog();
                     Navigator.pop(context);
-                    clear();
+                    clearController(newPlaceController);
                   },
                   child: const Text('Save'),
                 ),
                 //cancel dialog
                 MaterialButton(
-                  onPressed: cancel,
+                  onPressed: () {
+                    Navigator.pop(context);
+                    clearController(newPlaceController);
+                  },
                   child: const Text('Cancel'),
                 ),
               ],
@@ -212,196 +210,25 @@ class _HomePageState extends State<HomePage> {
     placeNameStr = newPlaceController.text;
   }
 
-  // add shift dialog functions(5)
+  void clearController(TextEditingController a) {
+    a.clear();
+  }
+
+// uses shift_dialog component
   void addShiftDialog() {
-    showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-              title: const Text('Add Shift'),
-              backgroundColor: Color.fromRGBO(250, 195, 32, 1),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // place name
-                    TextField(
-                      controller: newPlaceController,
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                      decoration:
-                          const InputDecoration(labelText: 'Place Name'),
-                    ),
-
-                    // address (optional)
-                    TextField(
-                      controller: newAddressController,
-                      decoration: const InputDecoration(
-                          labelText: 'Address (optional)'),
-                    ),
-
-                    // date picker
-                    TextField(
-                      controller: newDateController,
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                      decoration:
-                          const InputDecoration(labelText: 'Select date'),
-                      readOnly: true,
-                      onTap: () {
-                        _selectDate();
-                      },
-                    ),
-
-                    // start time - time picker
-                    TextField(
-                      controller: newStartTimeController,
-                      readOnly: true,
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                      decoration:
-                          const InputDecoration(labelText: 'Start Time'),
-                      onTap: () => {
-                        _selectTime(newStartTimeController),
-                      },
-                    ),
-
-                    // end time time picker
-                    TextField(
-                      controller: newEndTimeController,
-                      readOnly: true,
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                      decoration: const InputDecoration(labelText: 'End Time'),
-                      onTap: () => {
-                        _selectTime(newEndTimeController),
-                      },
-                    ),
-
-                    SizedBox(height: 5),
-                  ],
-                ),
-              ),
-              actions: [
-                // save button
-                MaterialButton(
-                  onPressed: () {
-                    saveDialog(pickedDate);
-                  },
-                  child: const Text('Save'),
-                ),
-                // cancel button
-                MaterialButton(
-                  onPressed: cancel,
-                  child: const Text('Cancel'),
-                ),
-              ],
-            ));
+    showDialog(context: context, builder: (context) => ShiftDialog());
   }
 
-  // datepicker method
-  Future<void> _selectDate() async {
-    DateTime? picked = await showDatePicker(
-        context: context,
-        initialDate: DateTime.now(),
-        firstDate: DateTime(2000),
-        lastDate: DateTime.now()); // they can't select date in future
-
-    if (picked != null) {
-      setState(() {
-        pickedDate = picked.toString();
-        newDateController.text = picked.toString().split(" ")[0];
-      });
-    }
-  }
-
-  // timepicker method -- needs to also store start/end times to calc duration
-  Future<void> _selectTime(final controller) async {
-    final TimeOfDay? getTime = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now(),
-      initialEntryMode: TimePickerEntryMode.dial,
-    );
-
-    if (getTime != null) {
-      setState(() {
-        if (startTimeDialog != TimeOfDay(hour: 0, minute: 0)) {
-          endTimeDialog = getTime;
-        } else {
-          startTimeDialog = getTime;
-        }
-
-        // Update text in controller after setting TimeOfDay variable
-        String newTimeText =
-            "${getTime.hour}:${getTime.minute} ${getTime.period.name}";
-        controller.text = newTimeText;
-      });
-    }
-  }
-
-  // clear the controllers (for dialog)
-  void clear() {
-    newAddressController.clear();
-    newDateController.clear();
-    newEndTimeController.clear();
-    newStartTimeController.clear();
-    newPlaceController.clear();
-
-    startTimeDialog = TimeOfDay(hour: 0, minute: 0);
-    endTimeDialog = TimeOfDay(hour: 0, minute: 0);
-  }
-
-  // cancel the dialog
-  void cancel() {
-    Navigator.pop(context);
-    clear();
-  }
-
-  // calculate duration between two user input times
-  TimeOfDay calculateTimeDuration(TimeOfDay startTime, TimeOfDay endTime) {
-    int startMinutes = startTime.hour * 60 + startTime.minute;
-    int endMinutes = endTime.hour * 60 + endTime.minute;
-
-    // Check if the end time is earlier than the start time (indicating it's on the next day)
-    if (endMinutes < startMinutes) {
-      endMinutes += 24 * 60; // Add 24 hours to account for the next day
-    }
-
-    int durationInMinutes = (endMinutes - startMinutes).abs();
-
-    int hours = durationInMinutes ~/ 60;
-    int minutes = durationInMinutes % 60;
-
-    return TimeOfDay(hour: hours, minute: minutes);
-  }
-
-  // put info into new shift object then save to list
-  void saveDialog(String newDate) {
-    // calculate duration (find difference between two timeOfDay objects)
-    TimeOfDay duration = calculateTimeDuration(startTimeDialog, endTimeDialog);
-    String workedTime = '${duration.hour}hrs ${duration.minute}min';
-
-    // create shift_item object via dialog
-    ShiftItem newShift = ShiftItem(
-        placeName: newPlaceController.text,
-        address: newAddressController.text,
-        startTime: newStartTimeController.text,
-        endTime: newEndTimeController.text,
-        workedTime: workedTime,
-        dateTime: newDate);
-
-    // add new shift from shift_data.dart
-    Provider.of<ShiftData>(context, listen: false).addNewShift(newShift);
-
+  // sends shift item from list to firebase DB (also used in shift_dialog.dart)
+  void sendShiftToDB(ShiftItem newShift) {
     if (newShift.startTime.isNotEmpty && newShift.endTime.isNotEmpty) {
       // store in firebase
-      FirebaseFirestore.instance.collection("User Shifts").add({
+      FirebaseFirestore.instance.collection("${user.email}").add({
         'PlaceName': newShift.placeName,
         'WorkedTime': newShift.workedTime,
         'DateTime': newShift.dateTime
       });
     }
-
-    print(
-        'start: ${newShift.startTime}, end: ${newShift.endTime}, total: ${newShift.workedTime}');
-
-    Navigator.pop(context);
-    clear();
   }
 
   // builds ui as...
@@ -422,12 +249,6 @@ class _HomePageState extends State<HomePage> {
                 // TODO: change titles as user selects different tabs
                 title: Text(titleOfTab),
                 backgroundColor: Color.fromRGBO(64, 46, 50, 1),
-                actions: [
-                  IconButton(
-                      onPressed: () {},
-                      tooltip: 'settings',
-                      icon: Icon(Icons.settings)),
-                ],
                 bottom: const TabBar(
                   tabs: <Widget>[
                     Tab(
@@ -478,7 +299,6 @@ class _HomePageState extends State<HomePage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         SizedBox(height: 20),
-
                         // Clock in title
                         Text((!started) ? 'Clock in' : 'Clock out',
                             style: TextStyle(
@@ -593,21 +413,7 @@ class _HomePageState extends State<HomePage> {
                                 borderRadius: BorderRadius.circular(10.0)),
                             child: Align(
                               alignment: Alignment.topCenter,
-                              // simple view list of last 5 shifts
-                              child: ListView.builder(
-                                reverse: true,
-                                shrinkWrap: true,
-                                itemCount: value.getAllShifts().length < 5
-                                    ? value.getAllShifts().length
-                                    : 5,
-                                itemBuilder: (context, index) => ShiftTile(
-                                    placeName:
-                                        value.getAllShifts()[index].placeName,
-                                    shiftDate:
-                                        value.getAllShifts()[index].dateTime,
-                                    workedTime:
-                                        value.getAllShifts()[index].workedTime),
-                              ),
+                              // make simple view list of last 7 shifts
                             ),
                           ),
                         ),
@@ -620,8 +426,8 @@ class _HomePageState extends State<HomePage> {
                       Expanded(
                           child: StreamBuilder(
                         stream: FirebaseFirestore.instance
-                            .collection("User Shifts")
-                            .orderBy("DateTime", descending: false)
+                            .collection("${user.email}")
+                            .orderBy("DateTime", descending: true)
                             .snapshots(),
                         builder: (context, snapshot) {
                           if (snapshot.hasData) {
@@ -630,21 +436,13 @@ class _HomePageState extends State<HomePage> {
                               itemBuilder: (context, index) {
                                 // get the User Shift from db
                                 final shift = snapshot.data!.docs[index];
-//TODO
-                                //conversion of firestore timestamp(sec/nano sec) into a DateTime value
-                                Timestamp timestamp = shift[
-                                    'DateTime']; // obj w seconds and nano seconds
 
-                                DateTime dateTime = timestamp.toDate();
-
-                                String dateStr = "${dateTime.day}/${dateTime.month}/${dateTime.year}";
-
-                                print(shift.data().entries);
+                                //print(shift.data().entries);
                                 return ShiftTile(
                                   placeName: shift['PlaceName'],
                                   workedTime: shift['WorkedTime'],
                                   // this needs reformatting somehow
-                                  shiftDate: dateStr,
+                                  shiftDate: shift['DateTime'],
                                 );
                               },
                             );

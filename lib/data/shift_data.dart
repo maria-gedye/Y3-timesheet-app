@@ -3,7 +3,9 @@ import 'package:timesheet_app/models/shift_item.dart';
 import 'package:flutter/material.dart';
 
 class ShiftData extends ChangeNotifier {
+
   // list all shifts
+  // currently resets to 0 everytime app is reloaded? restarted?
   List<ShiftItem> overallShiftList = [];
 
   // get shift list
@@ -63,6 +65,7 @@ class ShiftData extends ChangeNotifier {
     return startOfWeek!;
   }
 
+  
   // combine all shifts on weekly basis (bar graph)
   Map<String, double> calculateWeeklyWorkSummary() {
     Map<String, double> weeklyWorkSummary = {
