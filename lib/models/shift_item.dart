@@ -1,4 +1,5 @@
 class ShiftItem {
+  final String uniqueID;
   final String placeName;
   final String address;
   final String workedTime;
@@ -7,6 +8,7 @@ class ShiftItem {
   final String dateTime;
 
   ShiftItem({
+    required this.uniqueID,
     required this.placeName,
     required this.address,
     required this.workedTime,

@@ -3,7 +3,6 @@ import 'package:timesheet_app/models/shift_item.dart';
 import 'package:flutter/material.dart';
 
 class ShiftData extends ChangeNotifier {
-
   // list all shifts
   // currently resets to 0 everytime app is reloaded? restarted?
   List<ShiftItem> overallShiftList = [];
@@ -25,6 +24,21 @@ class ShiftData extends ChangeNotifier {
     overallShiftList.remove(shift);
 
     notifyListeners();
+  }
+
+ // generate ID for shift
+  String generateRandomId({int length = 20}) {
+    final _chars =
+        'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz0123456789';
+    int timeStamp = DateTime.now().millisecondsSinceEpoch;
+    String result = '';
+
+    for (int i = 0; i < length; i++) {
+      final index = (timeStamp + i) % _chars.length;
+      final char = _chars[index];
+      result += char;
+    }
+    return result;
   }
 
   // get weekday from dateTime object
@@ -65,7 +79,6 @@ class ShiftData extends ChangeNotifier {
     return startOfWeek!;
   }
 
-  
   // combine all shifts on weekly basis (bar graph)
   Map<String, double> calculateWeeklyWorkSummary() {
     Map<String, double> weeklyWorkSummary = {
@@ -87,7 +100,8 @@ class ShiftData extends ChangeNotifier {
       String dateStr = shift.dateTime;
       DateTime dateTime = DateTime.parse(dateStr);
 
-      String startWeekDate = convertDateTimeToSTring(getStartOfWeekDate(dateTime)); 
+      String startWeekDate =
+          convertDateTimeToSTring(getStartOfWeekDate(dateTime));
       double hours = double.parse(
           shift.workedTime); // turn string into double to do the math
 

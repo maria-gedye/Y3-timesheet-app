@@ -94,6 +94,7 @@ class _ShiftDialogState extends State<ShiftDialog> {
 
     // create shift_item object via dialog
     ShiftItem newShift = ShiftItem(
+        uniqueID: Provider.of<ShiftData>(context, listen: false).generateRandomId() ,
         placeName: newPlaceController.text,
         address: newAddressController.text,
         startTime: newStartTimeController.text,
@@ -111,22 +112,9 @@ class _ShiftDialogState extends State<ShiftDialog> {
     clear();
   }
 
-  String generateRandomId({int length = 20}) {
-  final _chars = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz0123456789';
-  int timeStamp = DateTime.now().millisecondsSinceEpoch;
-  String result = '';
-
-  for (int i = 0; i < length; i++) {
-    final index = (timeStamp + i) % _chars.length;
-    final char = _chars[index];
-    result += char;
-  }
-  return result;
-}
-
   // sends shift item from list to firebase DB (also used in shift_dialog.dart)
   void sendShiftToDB() {
-    // need some validation like a bool isThisManual in the shift item
+    // checking locally stored user data
     List<ShiftItem> shiftList =
         Provider.of<ShiftData>(context, listen: false).getAllShifts();
     print("list length: ${shiftList.length}");
@@ -137,21 +125,21 @@ class _ShiftDialogState extends State<ShiftDialog> {
     ShiftItem newShift = shiftList.last;
 
     if (newShift.startTime.isNotEmpty && newShift.endTime.isNotEmpty) {
-      // access firebase
-      Stream<QuerySnapshot> shiftStream =
-          FirebaseFirestore.instance.collection('${user.email}').snapshots();
-
+     // access firestore collection
       CollectionReference collectionRef =
           FirebaseFirestore.instance.collection('${user.email}');
 
       Map<String, dynamic> newShiftData = {
         'PlaceName': newShift.placeName,
+        'StartTime': newShift.startTime,
+        'EndTime': newShift.endTime,
         'WorkedTime': newShift.workedTime,
-        'DateTime': newShift.dateTime
+        'DateTime': newShift.dateTime,
+        'UniqueID' : newShift.uniqueID
         // Add other properties for your Shift object
       };
 
-      String newDocumentId = generateRandomId();
+      String newDocumentId = newShift.uniqueID;
 
       collectionRef.doc(newDocumentId).set(newShiftData).then((_) {
         print('Document added successfully!');

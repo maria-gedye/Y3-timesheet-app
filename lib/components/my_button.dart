@@ -1,3 +1,4 @@
+// rename to login/register button
 import 'package:flutter/material.dart';
 
 class MyButton extends StatelessWidget {

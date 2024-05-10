@@ -153,8 +153,12 @@ class _HomePageState extends State<HomePage> {
 
   // put info into new shift object then save to overallShiftList []
   void saveTracker() {
+
+    String newID =
+        Provider.of<ShiftData>(context, listen: false).generateRandomId();
     // create shift_item object via timetracker
     ShiftItem newShift = ShiftItem(
+      uniqueID: newID,
       placeName: placeNameStr,
       address: _currentAddress,
       startTime: startTime,
@@ -163,7 +167,13 @@ class _HomePageState extends State<HomePage> {
       dateTime: DateTime.now().toString(),
     );
 
+    // add newShift to overallShiftList []
+    Provider.of<ShiftData>(context, listen: false).addNewShift(newShift);
+    print("manual shift added to overallShiftList []");
+
     sendShiftToDB(newShift); // saves new obj to firebase
+
+    placeNameStr = 'Add place name';
   }
 
   // user to enter place name before stopping timer
@@ -188,7 +198,7 @@ class _HomePageState extends State<HomePage> {
                 // save dialog
                 MaterialButton(
                   onPressed: () {
-                    savePlaceDialog();
+                    placeNameStr = newPlaceController.text;
                     Navigator.pop(context);
                     clearController(newPlaceController);
                   },
@@ -206,10 +216,6 @@ class _HomePageState extends State<HomePage> {
             ));
   }
 
-  void savePlaceDialog() {
-    placeNameStr = newPlaceController.text;
-  }
-
   void clearController(TextEditingController a) {
     a.clear();
   }
@@ -225,8 +231,12 @@ class _HomePageState extends State<HomePage> {
       // store in firebase
       FirebaseFirestore.instance.collection("${user.email}").add({
         'PlaceName': newShift.placeName,
+        'StartTime': newShift.startTime,
+        'EndTime': newShift.endTime,
         'WorkedTime': newShift.workedTime,
-        'DateTime': newShift.dateTime
+        'DateTime': newShift.dateTime,
+        'UniqueID': newShift.uniqueID
+        // Add other properties for your Shift object
       });
     }
   }
@@ -348,7 +358,6 @@ class _HomePageState extends State<HomePage> {
                             onPressed: () async {
                               _currentLocation = await _getCurrentLocation();
                               await _getAddressFromCoordinates();
-                              //print(_currentAddress);
 
                               (!started) ? startTimer() : stopTimer();
                             },
@@ -391,7 +400,7 @@ class _HomePageState extends State<HomePage> {
                         // Button to add place name
                         TextButton(
                             onPressed: () {
-                              openPlaceDialog();
+                             (started) ? openPlaceDialog() : null;
                             },
                             style: TextButton.styleFrom(
                               disabledForegroundColor: Colors.grey,
@@ -434,11 +443,11 @@ class _HomePageState extends State<HomePage> {
                             return ListView.builder(
                               itemCount: snapshot.data!.docs.length,
                               itemBuilder: (context, index) {
-                                // get the User Shift from db
+                                // get the doc entries from firestore
                                 final shift = snapshot.data!.docs[index];
 
-                                //print(shift.data().entries);
                                 return ShiftTile(
+                                  uniqueID: shift['UniqueID'],
                                   placeName: shift['PlaceName'],
                                   workedTime: shift['WorkedTime'],
                                   // this needs reformatting somehow
