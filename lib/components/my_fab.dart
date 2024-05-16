@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class MyFab extends StatelessWidget {
   const MyFab({super.key});
 
-  static const _actionTitles = ['Add new shift', 'Create Timesheet'];
+  static const _actionTitles = ['Add new work', 'Create Timesheet'];
 
   void _showAction(BuildContext context, int index) {
     showDialog<void>(

@@ -1,20 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:timesheet_app/data/shift_data.dart';
-import 'package:timesheet_app/models/shift_item.dart';
+import 'package:timesheet_app/data/work_data.dart';
+import 'package:timesheet_app/models/work_item.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 //import 'package:timesheet_app/pages/home_page.dart';
 
-class ShiftDialog extends StatefulWidget {
-  const ShiftDialog({super.key});
+class WorkDialog extends StatefulWidget {
+  const WorkDialog({super.key});
 
   @override
-  State<ShiftDialog> createState() => _ShiftDialogState();
+  State<WorkDialog> createState() => _WorkDialogState();
 }
 
-class _ShiftDialogState extends State<ShiftDialog> {
-  // add shift dialog variables
+class _WorkDialogState extends State<WorkDialog> {
+  // add work dialog variables
   final newPlaceController = TextEditingController();
   final newAddressController = TextEditingController();
   final newDateController = TextEditingController();
@@ -26,7 +26,7 @@ class _ShiftDialogState extends State<ShiftDialog> {
 
   final user = FirebaseAuth.instance.currentUser!;
   //final HomePage _homePageState;
-  //_ShiftDialogState(this._homePageState);
+  //_WorkDialogState(this._homePageState);
 
   // datepicker method
   Future<void> _selectDate() async {
@@ -86,64 +86,63 @@ class _ShiftDialogState extends State<ShiftDialog> {
     return TimeOfDay(hour: hours, minute: minutes);
   }
 
-  // put info into new shift object then save to list (shift_data.dart)
+  // put info into new work object then save to list (work_data.dart)
   void saveDialog(String newDate) {
-    // calculate duration (find difference between two timeOfDay objects)
-    TimeOfDay duration = calculateTimeDuration(startTimeDialog, endTimeDialog);
-    String workedTime = '${duration.hour}hrs ${duration.minute}min';
+    if (newPlaceController.text.isNotEmpty &&
+        newEndTimeController.text.isNotEmpty) {
+      // calculate duration (find difference between two timeOfDay objects)
+      TimeOfDay duration =
+          calculateTimeDuration(startTimeDialog, endTimeDialog);
+      String workedTime = '${duration.hour}hrs ${duration.minute}min';
 
-    // create shift_item object via dialog
-    ShiftItem newShift = ShiftItem(
-        uniqueID: Provider.of<ShiftData>(context, listen: false).generateRandomId() ,
-        placeName: newPlaceController.text,
-        address: newAddressController.text,
-        startTime: newStartTimeController.text,
-        endTime: newEndTimeController.text,
-        workedTime: workedTime,
-        dateTime: newDate);
+      // create work_item object via dialog
+      WorkItem newWork = WorkItem(
+          uniqueID:
+              Provider.of<WorkData>(context, listen: false).generateRandomId(),
+          placeName: newPlaceController.text,
+          address: newAddressController.text,
+          startTime: newStartTimeController.text,
+          endTime: newEndTimeController.text,
+          workedTime: workedTime,
+          dateTime: newDate);
 
-// add newShift to overallShiftList []
-    Provider.of<ShiftData>(context, listen: false).addNewShift(newShift);
-    print("manual shift added to overallShiftList []");
+      // add newWork to overallWorkList []
+      Provider.of<WorkData>(context, listen: false).addNewWork(newWork);
+      print("manual work added to overallWorkList []");
 
-    sendShiftToDB();
+      sendWorkToDB(newWork);
+    }
 
     Navigator.pop(context);
     clear();
   }
 
-  // sends shift item from list to firebase DB (also used in shift_dialog.dart)
-  void sendShiftToDB() {
-    // checking locally stored user data
-    List<ShiftItem> shiftList =
-        Provider.of<ShiftData>(context, listen: false).getAllShifts();
-    print("list length: ${shiftList.length}");
-    for (ShiftItem shift in shiftList) {
-      print("place: ${shift.placeName}, duration: ${shift.workedTime}");
-    }
-// get the last item in overallShiftList (shift_data.dart)
-    ShiftItem newShift = shiftList.last;
-
-    if (newShift.startTime.isNotEmpty && newShift.endTime.isNotEmpty) {
-     // access firestore collection
+  // sends work item from list to firebase DB (also used in work_dialog.dart)
+  Future<void> sendWorkToDB(WorkItem work) async {
+    try {
+      // access firestore collection
       CollectionReference collectionRef =
           FirebaseFirestore.instance.collection('${user.email}');
 
-      Map<String, dynamic> newShiftData = {
-        'PlaceName': newShift.placeName,
-        'StartTime': newShift.startTime,
-        'EndTime': newShift.endTime,
-        'WorkedTime': newShift.workedTime,
-        'DateTime': newShift.dateTime,
-        'UniqueID' : newShift.uniqueID
-        // Add other properties for your Shift object
+      Map<String, dynamic> newWorkData = {
+        'PlaceName': work.placeName,
+        'StartTime': work.startTime,
+        'EndTime': work.endTime,
+        'WorkedTime': work.workedTime,
+        'DateTime': work.dateTime,
+        'UniqueID': work.uniqueID,
+        'Address': work.address
+        // Add other properties for your Work object
       };
+// generate ID for firestore reference
+      String newDocumentId =
+          Provider.of<WorkData>(context, listen: false).generateRandomId();
 
-      String newDocumentId = newShift.uniqueID;
-
-      collectionRef.doc(newDocumentId).set(newShiftData).then((_) {
+      collectionRef.doc(newDocumentId).set(newWorkData).then((_) {
         print('Document added successfully!');
-      }).catchError((error) => print('Error adding document: $error'));
+      });
+    } catch (error) {
+      print('Error adding document: $error');
     }
   }
 
@@ -168,7 +167,7 @@ class _ShiftDialogState extends State<ShiftDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Add Shift'),
+      title: const Text('Add Work'),
       backgroundColor: Color.fromRGBO(250, 195, 32, 1),
       content: SingleChildScrollView(
         child: Column(

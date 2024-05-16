@@ -1,32 +1,45 @@
 import 'package:timesheet_app/datetime/date_time_helper.dart';
-import 'package:timesheet_app/models/shift_item.dart';
+import 'package:timesheet_app/models/work_item.dart';
 import 'package:flutter/material.dart';
 
-class ShiftData extends ChangeNotifier {
-  // list all shifts
-  // currently resets to 0 everytime app is reloaded? restarted?
-  List<ShiftItem> overallShiftList = [];
+class WorkData extends ChangeNotifier {
+  // list all works
+  List<WorkItem> overallWorkList = [];
+  List<Map<String, dynamic>> savedWorks = [];
 
-  // get shift list
-  List<ShiftItem> getAllShifts() {
-    return overallShiftList;
+  // get work list
+  List<WorkItem> getAllWorks() {
+    return overallWorkList;
   }
 
-  // add new shift
-  void addNewShift(ShiftItem newShift) {
-    overallShiftList.add(newShift);
+    // get work list
+  List<Map<String, dynamic>> getFirestoreWorks() {
+    return savedWorks;
+  }
+
+  // add new workItem
+  void addNewWork(WorkItem newWork) {
+    overallWorkList.add(newWork);
 
     notifyListeners();
   }
 
-  // delete shift
-  void deleteShift(ShiftItem shift) {
-    overallShiftList.remove(shift);
+  // get firestore Map objects
+  void addFirestoreWork(Map<String, dynamic> f) {
+    savedWorks.add(f);
 
     notifyListeners();
   }
 
- // generate ID for shift
+
+  // delete work
+  void deleteWork(WorkItem work) {
+    overallWorkList.remove(work);
+
+    notifyListeners();
+  }
+
+ // generate ID for work
   String generateRandomId({int length = 20}) {
     final _chars =
         'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz0123456789';
@@ -79,33 +92,33 @@ class ShiftData extends ChangeNotifier {
     return startOfWeek!;
   }
 
-  // combine all shifts on weekly basis (bar graph)
+  // combine all works on weekly basis (bar graph)
   Map<String, double> calculateWeeklyWorkSummary() {
     Map<String, double> weeklyWorkSummary = {
       //startingdate (yyyymmdd) : Totalhours
     };
-    // reuse this method to check starting date for any shift
-    DateTime getStartOfWeekDate(DateTime shiftDate) {
+    // reuse this method to check starting date for any work
+    DateTime getStartOfWeekDate(DateTime workDate) {
       DateTime? startOfWeek;
-      // go backwards from a shift's date to find sunday
+      // go backwards from a work's date to find sunday
       for (int i = 0; i < 7; i++) {
-        if (getDayName(shiftDate.subtract(Duration(days: i))) == 'Sun') {
-          startOfWeek = shiftDate.subtract(Duration(days: i));
+        if (getDayName(workDate.subtract(Duration(days: i))) == 'Sun') {
+          startOfWeek = workDate.subtract(Duration(days: i));
         }
       }
       return startOfWeek!;
     }
 
-    for (var shift in overallShiftList) {
-      String dateStr = shift.dateTime;
+    for (var work in overallWorkList) {
+      String dateStr = work.dateTime;
       DateTime dateTime = DateTime.parse(dateStr);
 
       String startWeekDate =
           convertDateTimeToSTring(getStartOfWeekDate(dateTime));
       double hours = double.parse(
-          shift.workedTime); // turn string into double to do the math
+          work.workedTime); // turn string into double to do the math
 
-// if shifts starts in the same week:
+// if works starts in the same week:
       if (weeklyWorkSummary.containsKey(startWeekDate)) {
         double currentHours =
             weeklyWorkSummary[startWeekDate]!; // if date already exist in map
@@ -121,5 +134,5 @@ class ShiftData extends ChangeNotifier {
     return weeklyWorkSummary;
   }
 
-  // ONEDAY combine all shifts for a monthly view
+  // ONEDAY combine all works for a monthly view
 }

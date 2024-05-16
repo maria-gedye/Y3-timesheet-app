@@ -2,37 +2,37 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:timesheet_app/components/delete_button.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:timesheet_app/data/shift_data.dart';
-import 'package:timesheet_app/models/shift_item.dart';
+import 'package:timesheet_app/data/work_data.dart';
+import 'package:timesheet_app/models/work_item.dart';
 import 'package:provider/provider.dart';
 
-class ShiftTile extends StatefulWidget {
-  final String shiftDate;
+class WorkTile extends StatefulWidget {
+  final String workDate;
   final String placeName;
   final String workedTime;
   final String uniqueID;
 
-  const ShiftTile(
+  const WorkTile(
       {super.key,
-      required this.shiftDate,
+      required this.workDate,
       required this.placeName,
       required this.workedTime,
       required this.uniqueID});
 
   @override
-  State<ShiftTile> createState() => _ShiftTileState();
+  State<WorkTile> createState() => _WorkTileState();
 }
 
-class _ShiftTileState extends State<ShiftTile> {
+class _WorkTileState extends State<WorkTile> {
   // variables
   final user = FirebaseAuth.instance.currentUser!;
 
 // methods
-  void deleteShift() {
+  void deleteWork() {
     showDialog(
         context: context,
         builder: (context) => AlertDialog(
-              title: const Text('Delete Shift'),
+              title: const Text('Delete Work'),
               content:
                   const Text('Are you sure you want to delete this entry?'),
               actions: [
@@ -43,25 +43,25 @@ class _ShiftTileState extends State<ShiftTile> {
                 TextButton(
                   onPressed: () async {
                     // delete from local data
-                    List<ShiftItem> shiftList =
-                        Provider.of<ShiftData>(context, listen: false)
-                            .getAllShifts();
+                    List<WorkItem> workList =
+                        Provider.of<WorkData>(context, listen: false)
+                            .getAllWorks();
 
-                    // loop through item in overallShiftList (shift_data.dart)
-                    for (ShiftItem shift in shiftList) {
-                      if (shift.uniqueID == widget.uniqueID) {
-                        Provider.of<ShiftData>(context, listen: false)
-                            .deleteShift(shift);
-                        print('shift removed locally');
+                    // loop through item in overallWorkList (work_data.dart)
+                    for (WorkItem work in workList) {
+                      if (work.uniqueID == widget.uniqueID) {
+                        Provider.of<WorkData>(context, listen: false)
+                            .deleteWork(work);
+                        print('work removed locally');
                       } else {
-                        print('shift not found locally');
+                        print('work not found locally');
                       }
                     }
 
-                    print("list length: ${shiftList.length}");
-                    for (ShiftItem shift in shiftList) {
+                    print("list length: ${workList.length}");
+                    for (WorkItem work in workList) {
                       print(
-                          "place: ${shift.placeName}, duration: ${shift.workedTime}");
+                          "place: ${work.placeName}, duration: ${work.workedTime}");
                     }
 
                     // access firestore collection
@@ -81,7 +81,7 @@ class _ShiftTileState extends State<ShiftTile> {
                         // Call the delete method on the document reference
                         documentRef
                             .delete()
-                            .then((value) => print('shift deleted'));
+                            .then((value) => print('work deleted'));
                       } else {
                         print(
                             'Document not found!'); // Handle case where document doesn't exist
@@ -102,8 +102,8 @@ class _ShiftTileState extends State<ShiftTile> {
     return ListTile(
       textColor: Colors.white,
       title: Text(widget.placeName),
-      subtitle: Text("${widget.shiftDate} Total: ${widget.workedTime}"),
-      trailing: DeleteButton(onTap: deleteShift),
+      subtitle: Text("${widget.workDate} Total: ${widget.workedTime}"),
+      trailing: DeleteButton(onTap: deleteWork),
     );
   }
 }

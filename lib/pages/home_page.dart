@@ -4,16 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:timesheet_app/components/my_textfield.dart';
-import 'package:timesheet_app/components/shift_tile.dart';
-import 'package:timesheet_app/components/shift_dialog.dart';
+import 'package:timesheet_app/components/work_tile.dart';
+import 'package:timesheet_app/components/work_dialog.dart';
 import 'dart:async';
 import 'package:provider/provider.dart';
-import 'package:timesheet_app/data/shift_data.dart';
-import 'package:timesheet_app/models/shift_item.dart';
+import 'package:timesheet_app/data/work_data.dart';
+import 'package:timesheet_app/models/work_item.dart';
+import 'package:charts_flutter/flutter.dart' as charts;
 
 class HomePage extends StatefulWidget {
   HomePage({super.key});
-  //bool manualShift = false;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -25,7 +25,7 @@ class _HomePageState extends State<HomePage> {
   late bool servicePermission = false;
   late LocationPermission permission;
   String _currentAddress = '', _currentDuration = '';
-  String titleOfTab = 'Shift Tracker';
+  String titleOfTab = 'Work Tracker';
   final newPlaceController = TextEditingController();
 
 // timer variables
@@ -33,20 +33,57 @@ class _HomePageState extends State<HomePage> {
   String digitSeconds = "00", digitMinutes = "00", digitHours = "00";
   Timer? timer;
   bool started = false;
-  List shifts = [];
+  List works = [];
   int currentPageIndex = 0;
   String placeNameStr = 'Add place name';
   String endTime = '', startTime = '';
 
-  // FAB Icons
-  //List<IconData>? icons = const [Icons.add, Icons.document_scanner_rounded];
-  //final int _selectedIndex = 1;
   final user = FirebaseAuth.instance.currentUser!;
 
   //sign user out method
   void signUserOut() {
     FirebaseAuth.instance.signOut();
   }
+
+  // for the bar chart
+  // List<charts.Series<WorkItem, String>> _seriesBarData =
+  //     []; // holds bar series data
+  // List<WorkItem> fsData = []; // holds firestore data
+  // _generateData(fsData) {
+  //   //so here we use the charts add method:
+  //   _seriesBarData.add(charts.Series(
+  //           domainFn: (WorkItem workItem, _) =>
+  //               workItem.dateTime.toString(), // x axis (date)
+  //           measureFn: (WorkItem workItem, _) =>
+  //               int.parse(workItem.workedTime), // y axis (worked hours)
+  //           id: 'Total Weekly Hours',
+  //           data: fsData) // end of chart.Series
+  //       ); // end of add()
+  // } // end of generateData
+
+  // Widget _buildBody(AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot) {
+  //   // return StreamBuilder<QuerySnapshot>(
+  //   //     stream:
+  //   //         FirebaseFirestore.instance.collection('${user.email}').snapshots(),
+  //   //     builder: (context, snapshot) {
+  //         if (!snapshot.hasData) {
+  //           print('no data found for this user');
+  //           return LinearProgressIndicator();
+  //         } else {
+  //           List<WorkItem> workItems = snapshot.data!.docs
+  //               .map((documentSnapshot) => WorkItem.fromMap(
+  //                   documentSnapshot.data()))
+  //               .toList();
+  //           return _buildChart(context, workItems);
+  //         }
+  //       // });
+  // }
+
+  // Widget _buildChart(BuildContext context, List<WorkItem> workItem) {
+  //   fsData = workItem;
+  //   _generateData(fsData);
+  //   return Expanded(child: charts.BarChart(_seriesBarData)); // end of expanded
+  // } // end of _buildChart
 
   // get current location method
   Future<Position> _getCurrentLocation() async {
@@ -107,20 +144,20 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-// use this function to fill out workedTime property to be passed to new shift objects
+// use this function to fill out workedTime property to be passed to new Work objects
   void timerDuration() {
-    String shiftTime = "$digitHours hrs $digitMinutes min";
+    String workTime = "$digitHours hrs $digitMinutes min";
     setState(() {
       if (minutes > 0) {
-        // add this duration to new shift obj's workedTime property via this global variable
-        _currentDuration = shiftTime;
+        // add this duration to new Work obj's workedTime property via this global variable
+        _currentDuration = workTime;
       }
 
       reset();
     });
   }
 
-  // DO LATER put all this logic (except for setState) into timer dart file
+  // DO LATER make a seperate timer widget
   void startTimer() {
     started = true;
     TimeOfDay now = TimeOfDay.now();
@@ -151,13 +188,12 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  // put info into new shift object then save to overallShiftList []
+  // put info into new Work object then save to overallWorkList []
   void saveTracker() {
-
     String newID =
-        Provider.of<ShiftData>(context, listen: false).generateRandomId();
-    // create shift_item object via timetracker
-    ShiftItem newShift = ShiftItem(
+        Provider.of<WorkData>(context, listen: false).generateRandomId();
+    // create Work_item object via timetracker
+    WorkItem newWork = WorkItem(
       uniqueID: newID,
       placeName: placeNameStr,
       address: _currentAddress,
@@ -167,11 +203,11 @@ class _HomePageState extends State<HomePage> {
       dateTime: DateTime.now().toString(),
     );
 
-    // add newShift to overallShiftList []
-    Provider.of<ShiftData>(context, listen: false).addNewShift(newShift);
-    print("manual shift added to overallShiftList []");
+    // add newWork to overallWorkList []
+    Provider.of<WorkData>(context, listen: false).addNewWork(newWork);
+    print("manual Work added to overallWorkList []");
 
-    sendShiftToDB(newShift); // saves new obj to firebase
+    sendWorkToDB(newWork); // saves new obj to firebase
 
     placeNameStr = 'Add place name';
   }
@@ -220,23 +256,24 @@ class _HomePageState extends State<HomePage> {
     a.clear();
   }
 
-// uses shift_dialog component
-  void addShiftDialog() {
-    showDialog(context: context, builder: (context) => ShiftDialog());
+// uses Work_dialog component
+  void addWorkDialog() {
+    showDialog(context: context, builder: (context) => WorkDialog());
   }
 
-  // sends shift item from list to firebase DB (also used in shift_dialog.dart)
-  void sendShiftToDB(ShiftItem newShift) {
-    if (newShift.startTime.isNotEmpty && newShift.endTime.isNotEmpty) {
+  // sends Work item from list to firebase DB (also used in Work_dialog.dart)
+  void sendWorkToDB(WorkItem newWork) {
+    if (newWork.startTime.isNotEmpty && newWork.endTime.isNotEmpty) {
       // store in firebase
       FirebaseFirestore.instance.collection("${user.email}").add({
-        'PlaceName': newShift.placeName,
-        'StartTime': newShift.startTime,
-        'EndTime': newShift.endTime,
-        'WorkedTime': newShift.workedTime,
-        'DateTime': newShift.dateTime,
-        'UniqueID': newShift.uniqueID
-        // Add other properties for your Shift object
+        'PlaceName': newWork.placeName,
+        'StartTime': newWork.startTime,
+        'EndTime': newWork.endTime,
+        'WorkedTime': newWork.workedTime,
+        'DateTime': newWork.dateTime,
+        'UniqueID': newWork.uniqueID,
+        'Address': newWork.address
+        // Add the address
       });
     }
   }
@@ -244,19 +281,18 @@ class _HomePageState extends State<HomePage> {
   // builds ui as...
   @override
   Widget build(BuildContext context) {
-    return Consumer<ShiftData>(
-      builder: (context, value, child) => DefaultTabController(
-          initialIndex: 1,
+    return Consumer<WorkData>(builder: (context, value, child) {
+      return DefaultTabController(
           length: 3,
           child: Scaffold(
               floatingActionButton: FloatingActionButton(
-                onPressed: addShiftDialog,
+                onPressed: addWorkDialog,
                 backgroundColor: Color.fromRGBO(250, 195, 32, 1),
                 child: const Icon(Icons.add),
               ),
               backgroundColor: Color.fromRGBO(64, 46, 50, 1),
               appBar: AppBar(
-                // TODO: change titles as user selects different tabs
+                // backlog change titles as user selects different tabs
                 title: Text(titleOfTab),
                 backgroundColor: Color.fromRGBO(64, 46, 50, 1),
                 bottom: const TabBar(
@@ -400,7 +436,7 @@ class _HomePageState extends State<HomePage> {
                         // Button to add place name
                         TextButton(
                             onPressed: () {
-                             (started) ? openPlaceDialog() : null;
+                              (started) ? openPlaceDialog() : null;
                             },
                             style: TextButton.styleFrom(
                               disabledForegroundColor: Colors.grey,
@@ -422,7 +458,9 @@ class _HomePageState extends State<HomePage> {
                                 borderRadius: BorderRadius.circular(10.0)),
                             child: Align(
                               alignment: Alignment.topCenter,
-                              // make simple view list of last 7 shifts
+                              // what should go here? Total number of weekly hours
+                              // Number of records timesheeted or not timesheeted?
+                              child: Text("Total hours worked this week"),
                             ),
                           ),
                         ),
@@ -440,18 +478,21 @@ class _HomePageState extends State<HomePage> {
                             .snapshots(),
                         builder: (context, snapshot) {
                           if (snapshot.hasData) {
+                            // BAR GRAPH
+                            // _buildBody(snapshot);
+                            // Work LIST
                             return ListView.builder(
                               itemCount: snapshot.data!.docs.length,
                               itemBuilder: (context, index) {
                                 // get the doc entries from firestore
-                                final shift = snapshot.data!.docs[index];
+                                final doc = snapshot.data!.docs[index];
 
-                                return ShiftTile(
-                                  uniqueID: shift['UniqueID'],
-                                  placeName: shift['PlaceName'],
-                                  workedTime: shift['WorkedTime'],
+                                return WorkTile(
+                                  uniqueID: doc['UniqueID'],
+                                  placeName: doc['PlaceName'],
+                                  workedTime: doc['WorkedTime'],
                                   // this needs reformatting somehow
-                                  shiftDate: shift['DateTime'],
+                                  workDate: doc['DateTime'],
                                 );
                               },
                             );
@@ -469,7 +510,7 @@ class _HomePageState extends State<HomePage> {
                     ]),
                   ),
                 ]),
-              ))),
-    );
+              )));
+    });
   }
 }

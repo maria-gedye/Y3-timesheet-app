@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:timesheet_app/data/shift_data.dart';
+import 'package:timesheet_app/data/work_data.dart';
 import 'pages/auth_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) => ShiftData(),
+      create: (context) => WorkData(),
       builder: (context, child) => const MaterialApp(
         debugShowCheckedModeBanner: false,
         home: AuthPage(),
