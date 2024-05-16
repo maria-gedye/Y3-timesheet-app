@@ -1,10 +1,9 @@
 # timesheet_app
 
-This is my first flutter app which is my submission for the Yoobee assessment CS301 'MVP'.
-
-Currently built for android only.
 
 ## INSTALLATION GUIDE   (˵ ͡° ͜ʖ ͡°˵)
+
+Currently built for android only
 
 ### Instructions for running this project (for moderators, supervisors, tutors)
 Once you have forked this repository onto your local device please do the following:
@@ -27,16 +26,6 @@ For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
 
-
-## Issues I am already aware of
-
-If you actually made it this far, well done! While all devs try their best to have
-a 100% bug free experience (wow at the rubric metrics!), it is kinda impossible (just look @ Microsoft office) so here are some `bugs` I caught while making demos:
-
-
-*  timer has to run for at least a minute in order to be saved on tracker (home) screen (does not save to firestore)
-
-*  loading circle doesn't pop properly when signing in (needs person to tap on screen)
 
 
 

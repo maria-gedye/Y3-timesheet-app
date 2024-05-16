@@ -46,20 +46,22 @@ class _HomePageState extends State<HomePage> {
   }
 
   // for the bar chart
-  // List<charts.Series<WorkItem, String>> _seriesBarData =
-  //     []; // holds bar series data
-  // List<WorkItem> fsData = []; // holds firestore data
-  // _generateData(fsData) {
-  //   //so here we use the charts add method:
-  //   _seriesBarData.add(charts.Series(
-  //           domainFn: (WorkItem workItem, _) =>
-  //               workItem.dateTime.toString(), // x axis (date)
-  //           measureFn: (WorkItem workItem, _) =>
-  //               int.parse(workItem.workedTime), // y axis (worked hours)
-  //           id: 'Total Weekly Hours',
-  //           data: fsData) // end of chart.Series
-  //       ); // end of add()
-  // } // end of generateData
+  List<charts.Series<WorkItem, String>> _seriesBarData =
+      []; // holds bar series data
+  List<WorkItem> fsData = []; // holds firestore data
+
+  _generateData(fsData) {
+    //so here we use the charts add method:
+    _seriesBarData.add(charts.Series(
+            domainFn: (WorkItem workItem, _) =>
+                workItem.dateTime.toString(), // x axis (date)
+            measureFn: (WorkItem workItem, _) =>
+                int.parse(workItem.workedTime), // y axis (worked hours)
+            id: 'Total Weekly Hours',
+            data: fsData) // end of chart.Series
+        ); // end of add()
+        print('generateData method running');
+  } // end of generateData
 
   // Widget _buildBody(AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot) {
   //   // return StreamBuilder<QuerySnapshot>(
@@ -79,11 +81,12 @@ class _HomePageState extends State<HomePage> {
   //       // });
   // }
 
-  // Widget _buildChart(BuildContext context, List<WorkItem> workItem) {
-  //   fsData = workItem;
-  //   _generateData(fsData);
-  //   return Expanded(child: charts.BarChart(_seriesBarData)); // end of expanded
-  // } // end of _buildChart
+  Widget _buildChart(BuildContext context, List<WorkItem> workItem) {
+    fsData = workItem;
+    print('build chart method running');
+    _generateData(fsData);
+    return Expanded(child: charts.BarChart(_seriesBarData)); // end of expanded
+  } // end of _buildChart
 
   // get current location method
   Future<Position> _getCurrentLocation() async {
@@ -478,8 +481,17 @@ class _HomePageState extends State<HomePage> {
                             .snapshots(),
                         builder: (context, snapshot) {
                           if (snapshot.hasData) {
-                            // BAR GRAPH
-                            // _buildBody(snapshot);
+                            // // BAR GRAPH
+                            // List<WorkItem> workItems = snapshot.data!.docs
+                            //     .map((documentSnapshot) =>
+                            //         WorkItem.fromMap(documentSnapshot.data()))
+                            //     .toList();
+                            
+                            // print('snapshot has data');
+
+                            // _buildChart(context, workItems);
+                            
+
                             // Work LIST
                             return ListView.builder(
                               itemCount: snapshot.data!.docs.length,
