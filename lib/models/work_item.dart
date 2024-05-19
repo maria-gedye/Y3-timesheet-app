@@ -20,23 +20,7 @@ class WorkItem {
     required this.dateTime,
   });
 
-  // constructor to map firestore properties to WorkItem properties
-  WorkItem.fromMap(Map<String, dynamic> map)
-      : assert(map['UniqueID'] != null),
-        assert(map['PlaceName'] != null),
-        assert(map['Address'] != null),
-        assert(map['WorkedTime'] != null),
-        assert(map['StartTime'] != null),
-        assert(map['EndTime'] != null),
-        assert(map['DateTime'] != null),
-        uniqueID = map['UniqueID'],
-        placeName = map['PlaceName'],
-        address = map['Address'],
-        workedTime = map['WorkedTime'],
-        startTime = map['StartTime'],
-        endTime = map['EndTime'],
-        dateTime = map['DateTime'];
-
+  
   @override
   String toString() => "Record <$uniqueID:$placeName:$workedTime>";
 }

@@ -60,7 +60,7 @@ class _HomePageState extends State<HomePage> {
             id: 'Total Weekly Hours',
             data: fsData) // end of chart.Series
         ); // end of add()
-        print('generateData method running');
+    print('generateData method running');
   } // end of generateData
 
   // Widget _buildBody(AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot) {
@@ -284,7 +284,10 @@ class _HomePageState extends State<HomePage> {
   // builds ui as...
   @override
   Widget build(BuildContext context) {
+    List<WorkItem> workList = Provider.of<List<WorkItem>>(context);
     return Consumer<WorkData>(builder: (context, value, child) {
+      
+
       return DefaultTabController(
           length: 3,
           child: Scaffold(
@@ -474,51 +477,45 @@ class _HomePageState extends State<HomePage> {
                   Center(
                     child: Column(children: [
                       Expanded(
-                          child: StreamBuilder(
-                        stream: FirebaseFirestore.instance
-                            .collection("${user.email}")
-                            .orderBy("DateTime", descending: true)
-                            .snapshots(),
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData) {
-                            // // BAR GRAPH
-                            // List<WorkItem> workItems = snapshot.data!.docs
-                            //     .map((documentSnapshot) =>
-                            //         WorkItem.fromMap(documentSnapshot.data()))
-                            //     .toList();
-                            
-                            // print('snapshot has data');
+                        // Work LIST
+                        child: ListView.builder(
+                          itemCount: workList.length,
+                          itemBuilder: (context, index) {
+                            // get the doc entries from firestore
+                            // final doc = snapshot.data!.docs[index];
 
-                            // _buildChart(context, workItems);
-                            
-
-                            // Work LIST
-                            return ListView.builder(
-                              itemCount: snapshot.data!.docs.length,
-                              itemBuilder: (context, index) {
-                                // get the doc entries from firestore
-                                final doc = snapshot.data!.docs[index];
-
-                                return WorkTile(
-                                  uniqueID: doc['UniqueID'],
-                                  placeName: doc['PlaceName'],
-                                  workedTime: doc['WorkedTime'],
-                                  // this needs reformatting somehow
-                                  workDate: doc['DateTime'],
-                                );
-                              },
+                            return WorkTile(
+                              uniqueID: workList[index].uniqueID,
+                              placeName: workList[index].placeName,
+                              workedTime: workList[index].workedTime,
+                              // this needs reformatting somehow
+                              workDate: workList[index].dateTime,
                             );
-                            // check for any errors
-                          } else if (snapshot.hasError) {
-                            return Center(
-                              child: Text('Error: ${snapshot.error}'),
-                            );
-                          }
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        },
-                      )),
+                          },
+                        ),
+
+                        //     child: StreamBuilder(
+                        //   stream: FirebaseFirestore.instance
+                        //       .collection("${user.email}")
+                        //       .orderBy("DateTime", descending: true)
+                        //       .snapshots(),
+                        //   builder: (context, snapshot) {
+                        //     if (snapshot.hasData) {
+                        //       // // BAR GRAPH
+
+                        //
+                        //       // check for any errors
+                        //     } else if (snapshot.hasError) {
+                        //       return Center(
+                        //         child: Text('Error: ${snapshot.error}'),
+                        //       );
+                        //     }
+                        //     return const Center(
+                        //       child: CircularProgressIndicator(),
+                        //     );
+                        //   },
+                        // )
+                      ),
                     ]),
                   ),
                 ]),
