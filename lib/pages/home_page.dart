@@ -10,7 +10,7 @@ import 'dart:async';
 import 'package:provider/provider.dart';
 import 'package:timesheet_app/data/work_data.dart';
 import 'package:timesheet_app/models/work_item.dart';
-import 'package:charts_flutter/flutter.dart' as charts;
+import 'package:fl_chart/fl_chart.dart';
 
 class HomePage extends StatefulWidget {
   HomePage({super.key});
@@ -44,49 +44,6 @@ class _HomePageState extends State<HomePage> {
   void signUserOut() {
     FirebaseAuth.instance.signOut();
   }
-
-  // for the bar chart
-  List<charts.Series<WorkItem, String>> _seriesBarData =
-      []; // holds bar series data
-  List<WorkItem> fsData = []; // holds firestore data
-
-  _generateData(fsData) {
-    //so here we use the charts add method:
-    _seriesBarData.add(charts.Series(
-            domainFn: (WorkItem workItem, _) =>
-                workItem.dateTime.toString(), // x axis (date)
-            measureFn: (WorkItem workItem, _) =>
-                int.parse(workItem.workedTime), // y axis (worked hours)
-            id: 'Total Weekly Hours',
-            data: fsData) // end of chart.Series
-        ); // end of add()
-    print('generateData method running');
-  } // end of generateData
-
-  // Widget _buildBody(AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot) {
-  //   // return StreamBuilder<QuerySnapshot>(
-  //   //     stream:
-  //   //         FirebaseFirestore.instance.collection('${user.email}').snapshots(),
-  //   //     builder: (context, snapshot) {
-  //         if (!snapshot.hasData) {
-  //           print('no data found for this user');
-  //           return LinearProgressIndicator();
-  //         } else {
-  //           List<WorkItem> workItems = snapshot.data!.docs
-  //               .map((documentSnapshot) => WorkItem.fromMap(
-  //                   documentSnapshot.data()))
-  //               .toList();
-  //           return _buildChart(context, workItems);
-  //         }
-  //       // });
-  // }
-
-  Widget _buildChart(BuildContext context, List<WorkItem> workItem) {
-    fsData = workItem;
-    print('build chart method running');
-    _generateData(fsData);
-    return Expanded(child: charts.BarChart(_seriesBarData)); // end of expanded
-  } // end of _buildChart
 
   // get current location method
   Future<Position> _getCurrentLocation() async {
@@ -284,10 +241,11 @@ class _HomePageState extends State<HomePage> {
   // builds ui as...
   @override
   Widget build(BuildContext context) {
+    // call firestore provider
     List<WorkItem> workList = Provider.of<List<WorkItem>>(context);
-    return Consumer<WorkData>(builder: (context, value, child) {
-      
+    //initialise bar graph data:
 
+    return Consumer<WorkData>(builder: (context, value, child) {
       return DefaultTabController(
           length: 3,
           child: Scaffold(
@@ -476,14 +434,21 @@ class _HomePageState extends State<HomePage> {
                   // WOrkbook tab
                   Center(
                     child: Column(children: [
+                      // Bar GRAPH follow tutorial and set up data
+                      Expanded(
+                        child: BarChart(
+                          BarChartData(
+
+                        ),
+                        swapAnimationDuration: Duration(milliseconds: 150),
+                        swapAnimationCurve: Curves.linear,),
+                      ),
+
                       Expanded(
                         // Work LIST
                         child: ListView.builder(
                           itemCount: workList.length,
                           itemBuilder: (context, index) {
-                            // get the doc entries from firestore
-                            // final doc = snapshot.data!.docs[index];
-
                             return WorkTile(
                               uniqueID: workList[index].uniqueID,
                               placeName: workList[index].placeName,
@@ -493,28 +458,6 @@ class _HomePageState extends State<HomePage> {
                             );
                           },
                         ),
-
-                        //     child: StreamBuilder(
-                        //   stream: FirebaseFirestore.instance
-                        //       .collection("${user.email}")
-                        //       .orderBy("DateTime", descending: true)
-                        //       .snapshots(),
-                        //   builder: (context, snapshot) {
-                        //     if (snapshot.hasData) {
-                        //       // // BAR GRAPH
-
-                        //
-                        //       // check for any errors
-                        //     } else if (snapshot.hasError) {
-                        //       return Center(
-                        //         child: Text('Error: ${snapshot.error}'),
-                        //       );
-                        //     }
-                        //     return const Center(
-                        //       child: CircularProgressIndicator(),
-                        //     );
-                        //   },
-                        // )
                       ),
                     ]),
                   ),
