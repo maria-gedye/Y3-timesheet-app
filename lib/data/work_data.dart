@@ -2,19 +2,17 @@ import 'package:timesheet_app/datetime/date_time_helper.dart';
 import 'package:timesheet_app/models/work_item.dart';
 import 'package:flutter/material.dart';
 
+
+
+// HELPER METHODS
+
 class WorkData extends ChangeNotifier {
   // list all works
   List<WorkItem> overallWorkList = [];
-  List<Map<String, dynamic>> savedWorks = [];
 
   // get work list
   List<WorkItem> getAllWorks() {
     return overallWorkList;
-  }
-
-    // get work list
-  List<Map<String, dynamic>> getFirestoreWorks() {
-    return savedWorks;
   }
 
   // add new workItem
@@ -24,14 +22,6 @@ class WorkData extends ChangeNotifier {
     notifyListeners();
   }
 
-  // get firestore Map objects
-  void addFirestoreWork(Map<String, dynamic> f) {
-    savedWorks.add(f);
-
-    notifyListeners();
-  }
-
-
   // delete work
   void deleteWork(WorkItem work) {
     overallWorkList.remove(work);
@@ -39,7 +29,7 @@ class WorkData extends ChangeNotifier {
     notifyListeners();
   }
 
- // generate ID for work
+  // generate ID for work
   String generateRandomId({int length = 20}) {
     final _chars =
         'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz0123456789';
@@ -91,48 +81,48 @@ class WorkData extends ChangeNotifier {
     }
     return startOfWeek!;
   }
+}
 
-  // combine all works on weekly basis (bar graph)
-  Map<String, double> calculateWeeklyWorkSummary() {
-    Map<String, double> weeklyWorkSummary = {
-      //startingdate (yyyymmdd) : Totalhours
-    };
-    // reuse this method to check starting date for any work
-    DateTime getStartOfWeekDate(DateTime workDate) {
-      DateTime? startOfWeek;
-      // go backwards from a work's date to find sunday
-      for (int i = 0; i < 7; i++) {
-        if (getDayName(workDate.subtract(Duration(days: i))) == 'Sun') {
-          startOfWeek = workDate.subtract(Duration(days: i));
-        }
-      }
-      return startOfWeek!;
-    }
+// old method
+//   Map<String, double> calculateWeeklyWorkSummary() {
+//     Map<String, double> weeklyWorkSummary = {
+//       //startingdate (yyyymmdd) : Totalhours
+//     };
+//     // reuse this method to check starting date for any work
+//     DateTime getStartOfWeekDate(DateTime workDate) {
+//       DateTime? startOfWeek;
+//       // go backwards from a work's date to find sunday
+//       for (int i = 0; i < 7; i++) {
+//         if (getDayName(workDate.subtract(Duration(days: i))) == 'Sun') {
+//           startOfWeek = workDate.subtract(Duration(days: i));
+//         }
+//       }
+//       return startOfWeek!;
+//     }
 
-    for (var work in overallWorkList) {
-      String dateStr = work.dateTime;
-      DateTime dateTime = DateTime.parse(dateStr);
+//     for (var work in overallWorkList) {
+//       String dateStr = work.dateTime;
+//       DateTime dateTime = DateTime.parse(dateStr);
 
-      String startWeekDate =
-          convertDateTimeToSTring(getStartOfWeekDate(dateTime));
-      double hours = double.parse(
-          work.workedTime); // turn string into double to do the math
+//       String startWeekDate =
+//           convertDateTimeToSTring(getStartOfWeekDate(dateTime));
+//       double hours = double.parse(
+//           work.workedTime); // turn string into double to do the math
 
-// if works starts in the same week:
-      if (weeklyWorkSummary.containsKey(startWeekDate)) {
-        double currentHours =
-            weeklyWorkSummary[startWeekDate]!; // if date already exist in map
-        currentHours += hours; // add hours on
-        weeklyWorkSummary[startWeekDate] = currentHours;
-      } else {
-        weeklyWorkSummary.addAll({
-          startWeekDate: hours
-        }); // else if its a new date, add date and hours
-      }
-    }
+// // if works starts in the same week:
+//       if (weeklyWorkSummary.containsKey(startWeekDate)) {
+//         double currentHours =
+//             weeklyWorkSummary[startWeekDate]!; // if date already exist in map
+//         currentHours += hours; // add hours on
+//         weeklyWorkSummary[startWeekDate] = currentHours;
+//       } else {
+//         weeklyWorkSummary.addAll({
+//           startWeekDate: hours
+//         }); // else if its a new date, add date and hours
+//       }
+//     }
 
-    return weeklyWorkSummary;
-  }
+//     return weeklyWorkSummary;
+//   }
 
   // ONEDAY combine all works for a monthly view
-}

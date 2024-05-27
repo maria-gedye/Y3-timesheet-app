@@ -1,6 +1,4 @@
-// please add address properties to all methods posting WorkItems (dialog, tracker)
-// remove old documents in firestore and create new entries with the corrected props
-// test bar graph
+
 class WorkItem {
   final String uniqueID;
   final String placeName;

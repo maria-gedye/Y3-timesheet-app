@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:timesheet_app/bar%20graph/bar_graph.dart';
 import 'package:timesheet_app/components/my_textfield.dart';
 import 'package:timesheet_app/components/work_tile.dart';
 import 'package:timesheet_app/components/work_dialog.dart';
@@ -435,15 +436,17 @@ class _HomePageState extends State<HomePage> {
                   Center(
                     child: Column(children: [
                       // Bar GRAPH follow tutorial and set up data
-                      Expanded(
+                      Container(
+                        padding: EdgeInsets.only(top: 30),
+                        height: 200,
                         child: BarChart(
                           BarChartData(
-
-                        ),
-                        swapAnimationDuration: Duration(milliseconds: 150),
-                        swapAnimationCurve: Curves.linear,),
-                      ),
-
+                            minY: 0,
+                            maxY: 100,
+                          ),
+                          swapAnimationDuration: Duration(milliseconds: 150),
+                          swapAnimationCurve: Curves.linear,)),
+                    
                       Expanded(
                         // Work LIST
                         child: ListView.builder(
