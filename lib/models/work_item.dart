@@ -18,7 +18,4 @@ class WorkItem {
     required this.dateTime,
   });
 
-  
-  @override
-  String toString() => "Record <$uniqueID:$placeName:$workedTime>";
 }

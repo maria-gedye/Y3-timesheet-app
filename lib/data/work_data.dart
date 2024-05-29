@@ -2,8 +2,6 @@ import 'package:timesheet_app/datetime/date_time_helper.dart';
 import 'package:timesheet_app/models/work_item.dart';
 import 'package:flutter/material.dart';
 
-
-
 // HELPER METHODS
 
 class WorkData extends ChangeNotifier {
@@ -45,43 +43,43 @@ class WorkData extends ChangeNotifier {
   }
 
   // get weekday from dateTime object
-  String getDayName(DateTime dateTime) {
-    switch (dateTime.weekday) {
-      case 1:
-        return 'Mon';
-      case 2:
-        return 'Tue';
-      case 3:
-        return 'Wed';
-      case 4:
-        return 'Thu';
-      case 5:
-        return 'Fri';
-      case 6:
-        return 'Sat';
-      case 7:
-        return 'Sun';
+  int getDayNumber(String day) {
+    switch (day) {
+      case 'Sunday':
+        return 1;
+      case 'Monday':
+        return 2;
+      case 'Tuesday':
+        return 3;
+      case 'Wednesday':
+        return 4;
+      case 'Thursday':
+        return 5;
+      case 'Friday':
+        return 6;
+      case 'Saturday':
+        return 7;
       default:
-        return '';
+        return 0;
     }
-  }
-
-  // get date for start of the week
-  DateTime startOfWeekDate() {
-    DateTime? startOfWeek;
-
-    // get todays date
-    DateTime today = DateTime.now();
-
-    // go backwards from today to find sunday
-    for (int i = 0; i < 7; i++) {
-      if (getDayName(today.subtract(Duration(days: i))) == 'Sun') {
-        startOfWeek = today.subtract(Duration(days: i));
-      }
-    }
-    return startOfWeek!;
   }
 }
+  // get date for start of the week
+//   DateTime startOfWeekDate() {
+//     DateTime? startOfWeek;
+
+//     // get todays date
+//     DateTime today = DateTime.now();
+
+//     // go backwards from today to find sunday
+//     for (int i = 0; i < 7; i++) {
+//       if (getDayName(today.subtract(Duration(days: i))) == 'Sun') {
+//         startOfWeek = today.subtract(Duration(days: i));
+//       }
+//     }
+//     return startOfWeek!;
+//   }
+// }
 
 // old method
 //   Map<String, double> calculateWeeklyWorkSummary() {

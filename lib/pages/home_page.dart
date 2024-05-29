@@ -8,6 +8,7 @@ import 'package:timesheet_app/components/my_textfield.dart';
 import 'package:timesheet_app/components/work_tile.dart';
 import 'package:timesheet_app/components/work_dialog.dart';
 import 'dart:async';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:timesheet_app/data/work_data.dart';
 import 'package:timesheet_app/models/work_item.dart';
@@ -239,12 +240,13 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+ 
+
   // builds ui as...
   @override
   Widget build(BuildContext context) {
     // call firestore provider
     List<WorkItem> workList = Provider.of<List<WorkItem>>(context);
-    //initialise bar graph data:
 
     return Consumer<WorkData>(builder: (context, value, child) {
       return DefaultTabController(
@@ -437,16 +439,11 @@ class _HomePageState extends State<HomePage> {
                     child: Column(children: [
                       // Bar GRAPH follow tutorial and set up data
                       Container(
-                        padding: EdgeInsets.only(top: 30),
-                        height: 200,
-                        child: BarChart(
-                          BarChartData(
-                            minY: 0,
-                            maxY: 100,
+                          padding: EdgeInsets.only(top: 30),
+                          height: 200,
+                          child: WeeklyBarChart()
                           ),
-                          swapAnimationDuration: Duration(milliseconds: 150),
-                          swapAnimationCurve: Curves.linear,)),
-                    
+
                       Expanded(
                         // Work LIST
                         child: ListView.builder(
