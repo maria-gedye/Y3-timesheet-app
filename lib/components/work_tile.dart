@@ -99,10 +99,12 @@ class _WorkTileState extends State<WorkTile> {
 
   @override
   Widget build(BuildContext context) {
+    String shortDate = widget.workDate.substring(0,10);
+
     return ListTile(
       textColor: Colors.white,
       title: Text(widget.placeName),
-      subtitle: Text("${widget.workDate} Total: ${widget.workedTime}"),
+      subtitle: Text("$shortDate    Total: ${widget.workedTime}"),
       trailing: DeleteButton(onTap: deleteWork),
     );
   }
