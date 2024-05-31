@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
-import 'package:timesheet_app/data/work_data.dart';
 import 'package:timesheet_app/models/work_item.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:timesheet_app/providers/database_provider.dart';
@@ -32,6 +30,7 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
       stream: _databaseProvider.workItems, // Access the stream
       builder: (context, snapshot) {
         if (snapshot.hasData) {
+          // query for data that exists in the current week here
           final workItems = snapshot.data!; // Get the list of WorkItems
           final chartData = _getChartData(workItems); // Convert to chart data
           return BarChart(

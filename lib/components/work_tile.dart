@@ -28,7 +28,7 @@ class _WorkTileState extends State<WorkTile> {
   final user = FirebaseAuth.instance.currentUser!;
 
 // methods
-  void deleteWork() {
+  deleteWork() {
     showDialog(
         context: context,
         builder: (context) => AlertDialog(

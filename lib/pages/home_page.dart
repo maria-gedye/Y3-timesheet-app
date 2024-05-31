@@ -7,12 +7,13 @@ import 'package:timesheet_app/bar%20graph/bar_graph.dart';
 import 'package:timesheet_app/components/my_textfield.dart';
 import 'package:timesheet_app/components/work_tile.dart';
 import 'package:timesheet_app/components/work_dialog.dart';
+import 'package:timesheet_app/components/weekly_hours_box.dart';
 import 'dart:async';
-import 'package:intl/intl.dart';
+
 import 'package:provider/provider.dart';
 import 'package:timesheet_app/data/work_data.dart';
 import 'package:timesheet_app/models/work_item.dart';
-import 'package:fl_chart/fl_chart.dart';
+
 
 class HomePage extends StatefulWidget {
   HomePage({super.key});
@@ -418,18 +419,7 @@ class _HomePageState extends State<HomePage> {
                         // total hours worked card
                         Padding(
                           padding: const EdgeInsets.all(16.0),
-                          child: Container(
-                            height: 160.0,
-                            decoration: BoxDecoration(
-                                color: Color.fromARGB(255, 73, 53, 57),
-                                borderRadius: BorderRadius.circular(10.0)),
-                            child: Align(
-                              alignment: Alignment.topCenter,
-                              // what should go here? Total number of weekly hours
-                              // Number of records timesheeted or not timesheeted?
-                              child: Text("Total hours worked this week"),
-                            ),
-                          ),
+                          child: WeeklyHoursBox(),
                         ),
                       ],
                     )),
@@ -437,7 +427,7 @@ class _HomePageState extends State<HomePage> {
                   // WOrkbook tab
                   Center(
                     child: Column(children: [
-                      // Bar GRAPH follow tutorial and set up data
+                      // Bar GRAPH 
                       Container(
                           padding: EdgeInsets.only(top: 30),
                           height: 200,

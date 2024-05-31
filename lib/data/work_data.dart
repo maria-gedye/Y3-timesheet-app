@@ -1,4 +1,3 @@
-import 'package:timesheet_app/datetime/date_time_helper.dart';
 import 'package:timesheet_app/models/work_item.dart';
 import 'package:flutter/material.dart';
 
@@ -29,14 +28,14 @@ class WorkData extends ChangeNotifier {
 
   // generate ID for work
   String generateRandomId({int length = 20}) {
-    final _chars =
+    const chars =
         'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz0123456789';
     int timeStamp = DateTime.now().millisecondsSinceEpoch;
     String result = '';
 
     for (int i = 0; i < length; i++) {
-      final index = (timeStamp + i) % _chars.length;
-      final char = _chars[index];
+      final index = (timeStamp + i) % chars.length;
+      final char = chars[index];
       result += char;
     }
     return result;
