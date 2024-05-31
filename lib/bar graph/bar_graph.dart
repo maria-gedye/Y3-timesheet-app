@@ -73,7 +73,7 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
     int hours, minutes;
 
     for (final workItem in workItems) {
-      DateTime dateTime = DateTime.parse(workItem.dateTime);
+      DateTime dateTime = DateTime.parse(workItem.dateString);
       if (DateFormat('EEEE').format(dateTime) == day) {
         String timeString = workItem.workedTime;
         RegExp regex = RegExp(

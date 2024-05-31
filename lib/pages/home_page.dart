@@ -163,7 +163,8 @@ class _HomePageState extends State<HomePage> {
       startTime: startTime,
       endTime: endTime,
       workedTime: _currentDuration,
-      dateTime: DateTime.now().toString(),
+      dateString: DateTime.now().toString(),
+      dateTime: DateTime.now()
     );
 
     // add newWork to overallWorkList []
@@ -235,7 +236,8 @@ class _HomePageState extends State<HomePage> {
         'WorkedTime': newWork.workedTime,
         'DateTime': newWork.dateTime,
         'UniqueID': newWork.uniqueID,
-        'Address': newWork.address
+        'Address': newWork.address,
+        'DateString': newWork.dateString
         // Add the address
       });
     }
@@ -444,7 +446,7 @@ class _HomePageState extends State<HomePage> {
                               placeName: workList[index].placeName,
                               workedTime: workList[index].workedTime,
                               // this needs reformatting somehow
-                              workDate: workList[index].dateTime,
+                              workDate: workList[index].dateString,
                             );
                           },
                         ),

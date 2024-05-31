@@ -20,7 +20,8 @@ class _WorkDialogState extends State<WorkDialog> {
   final newDateController = TextEditingController();
   final newStartTimeController = TextEditingController();
   final newEndTimeController = TextEditingController();
-  String pickedDate = '', startTime = '', endTime = '';
+  String startTime = '', endTime = '';
+  DateTime pickedDate = DateTime.now();
   TimeOfDay startTimeDialog = TimeOfDay(hour: 0, minute: 0);
   TimeOfDay endTimeDialog = TimeOfDay(hour: 0, minute: 0);
 
@@ -38,7 +39,7 @@ class _WorkDialogState extends State<WorkDialog> {
 
     if (picked != null) {
       setState(() {
-        pickedDate = picked.toString();
+        pickedDate = picked;
         newDateController.text = picked.toString().split(" ")[0];
       });
     }
@@ -87,7 +88,7 @@ class _WorkDialogState extends State<WorkDialog> {
   }
 
   // put info into new work object then save to list (work_data.dart)
-  void saveDialog(String newDate) {
+  void saveDialog(DateTime newDate) {
     if (newPlaceController.text.isNotEmpty &&
         newEndTimeController.text.isNotEmpty) {
       // calculate duration (find difference between two timeOfDay objects)
@@ -104,7 +105,9 @@ class _WorkDialogState extends State<WorkDialog> {
           startTime: newStartTimeController.text,
           endTime: newEndTimeController.text,
           workedTime: workedTime,
-          dateTime: newDate);
+          dateString: newDate.toString(),
+          dateTime: newDate
+          );
 
       // add newWork to overallWorkList []
       Provider.of<WorkData>(context, listen: false).addNewWork(newWork);
@@ -131,7 +134,8 @@ class _WorkDialogState extends State<WorkDialog> {
         'WorkedTime': work.workedTime,
         'DateTime': work.dateTime,
         'UniqueID': work.uniqueID,
-        'Address': work.address
+        'Address': work.address,
+        'DateString': work.dateString
         // Add other properties for your Work object
       };
 // generate ID for firestore reference
