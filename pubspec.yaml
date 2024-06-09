@@ -30,6 +30,8 @@ dependencies:
   floating_menu_panel: ^0.0.2
   charts_flutter: ^0.12.0
   fl_chart: ^0.62.0
+  flutter_expandable_fab: ^2.0.0
+
 
 
 dev_dependencies:
