@@ -133,6 +133,7 @@ class _WorkTileForTimesheetPageState extends State<WorkTileForTimesheetPage> {
   Widget build(BuildContext context) {
     String shortDate = widget.workDate.substring(0, 10);
     bool _isChecked = false;
+    
     return ListTile(
       leading: Checkbox(
         value: _isChecked,

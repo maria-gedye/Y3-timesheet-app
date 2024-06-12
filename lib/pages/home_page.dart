@@ -55,24 +55,19 @@ class _HomePageState extends State<HomePage> {
                   // color: Colors.black.withOpacity(0.5),
                   blur: 5,
                 ),
-                // onOpen: () {
-                //   debugPrint('onOpen');
-                // },
-                // afterOpen: () {
-                //   debugPrint('afterOpen');
-                // },
-                // onClose: () {
-                //   debugPrint('onClose');
-                // },
-                // afterClose: () {
-                //   debugPrint('afterClose');
-                // },
                 children: [
                   // add work shift button
                   FloatingActionButton.large(
                     // shape: const CircleBorder(),
                     heroTag: null,
-                    onPressed: addWorkDialog,
+                    onPressed: () {
+                      addWorkDialog();
+                      final state = _key.currentState;
+                      if (state != null) {
+                        debugPrint('isOpen:${state.isOpen}');
+                        state.toggle();
+                      }
+                    },
                     child: const Icon(Icons.work),
                   ),
                   // create timesheet button
@@ -83,7 +78,11 @@ class _HomePageState extends State<HomePage> {
                     onPressed: () {
                       Navigator.of(context).push(MaterialPageRoute(
                           builder: ((context) => const TimesheetPage())));
-                      // close extended fab
+                      final state = _key.currentState;
+                      if (state != null) {
+                        debugPrint('isOpen:${state.isOpen}');
+                        state.toggle();
+                      }
                     },
                   ),
                 ],
@@ -161,7 +160,7 @@ class _HomePageState extends State<HomePage> {
                           padding: EdgeInsets.only(top: 30),
                           height: 200,
                           child: WeeklyBarChart()),
-                      SizedBox(height:20),
+                      SizedBox(height: 20),
                       Text(
                         "All Entries",
                         style: TextStyle(color: Colors.white, fontSize: 18),
