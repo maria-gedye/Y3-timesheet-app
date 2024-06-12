@@ -58,11 +58,11 @@ class _WorkTileState extends State<WorkTile> {
                       }
                     }
 
-                    print("list length: ${workList.length}");
-                    for (WorkItem work in workList) {
-                      print(
-                          "place: ${work.placeName}, duration: ${work.workedTime}");
-                    }
+                    // print("list length: ${workList.length}");
+                    // for (WorkItem work in workList) {
+                    //   print(
+                    //       "place: ${work.placeName}, duration: ${work.workedTime}");
+                    // }
 
                     // access firestore collection
                     CollectionReference collectionRef =
@@ -99,13 +99,53 @@ class _WorkTileState extends State<WorkTile> {
 
   @override
   Widget build(BuildContext context) {
-    String shortDate = widget.workDate.substring(0,10);
+    String shortDate = widget.workDate.substring(0, 10);
 
     return ListTile(
       textColor: Colors.white,
       title: Text(widget.placeName),
       subtitle: Text("$shortDate    Total: ${widget.workedTime}"),
       trailing: DeleteButton(onTap: deleteWork),
+    );
+  }
+}
+
+class WorkTileForTimesheetPage extends StatefulWidget {
+  final String workDate;
+  final String placeName;
+  final String workedTime;
+  final String uniqueID;
+
+  const WorkTileForTimesheetPage(
+      {super.key,
+      required this.workDate,
+      required this.placeName,
+      required this.workedTime,
+      required this.uniqueID});
+
+  @override
+  State<WorkTileForTimesheetPage> createState() =>
+      _WorkTileForTimesheetPageState();
+}
+
+class _WorkTileForTimesheetPageState extends State<WorkTileForTimesheetPage> {
+  @override
+  Widget build(BuildContext context) {
+    String shortDate = widget.workDate.substring(0, 10);
+    bool _isChecked = false;
+    return ListTile(
+      leading: Checkbox(
+        value: _isChecked,
+        activeColor: Color.fromRGBO(250, 195, 32, 1),
+        onChanged: (newValue) {
+          setState(() {
+            _isChecked = newValue!;
+          });
+        },
+      ),
+      textColor: Colors.white,
+      title: Text(widget.placeName),
+      subtitle: Text("$shortDate    Total: ${widget.workedTime}"),
     );
   }
 }

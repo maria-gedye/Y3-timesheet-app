@@ -16,13 +16,13 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
   final DatabaseProvider _databaseProvider = DatabaseProvider();
   final List<String> xAxisLabels = [
     'Sunday',
-  'Monday',
-  'Tuesday',
-  'Wednesday',
-  'Thursday',
-  'Friday',
-  'Saturday'
-];
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday'
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +34,7 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
           final workItems = snapshot.data!; // Get the list of WorkItems
           final chartData = _getChartData(workItems); // Convert to chart data
           return BarChart(
-            BarChartData(    
+            BarChartData(
               minY: 0,
               maxY: 20,
               backgroundColor: Colors.white10,
@@ -42,22 +42,23 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
               borderData: FlBorderData(
                 show: false, // Optional: hide chart border
               ),
-            titlesData: FlTitlesData(
-              show: true,
-              topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-              bottomTitles: AxisTitles(
-                sideTitles: SideTitles(
-                  showTitles: true,
-                  getTitlesWidget: getTitles,
-                  reservedSize: 30,
+              titlesData: FlTitlesData(
+                show: true,
+                topTitles:
+                    AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                bottomTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    getTitlesWidget: getTitles,
+                    reservedSize: 30,
+                  ),
                 ),
               ),
             ),
-            ),
-            
           );
         } else if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}');
+          debugPrint('Bar Chart Error: ${snapshot.error}');
+          return Text('Bar Chart Error: ${snapshot.error}');
         }
         return const CircularProgressIndicator(); // Loading indicator
       },
@@ -67,51 +68,49 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
 //methods
   List<BarChartGroupData> _getChartData(List<WorkItem> workItems) {
     final List<BarChartGroupData> chartData = [];
-  for (int i = 0; i < xAxisLabels.length; i++) {
-    final day = xAxisLabels[i];
-    double workedHours = 0.0; // Initialize workedHours for each day
-    int hours, minutes;
+    for (int i = 0; i < xAxisLabels.length; i++) {
+      final day = xAxisLabels[i];
+      double workedHours = 0.0; // Initialize workedHours for each day
+      int hours, minutes;
 
-    for (final workItem in workItems) {
-      DateTime dateTime = DateTime.parse(workItem.dateString);
-      if (DateFormat('EEEE').format(dateTime) == day) {
-        String timeString = workItem.workedTime;
-        RegExp regex = RegExp(
-            r"^(\d+)hrs (\d+)min"); // Match digits followed by "hrs" and "min"
+      for (final workItem in workItems) {
+        DateTime dateTime = DateTime.parse(workItem.dateString);
+        if (DateFormat('EEEE').format(dateTime) == day) {
+          String timeString = workItem.workedTime;
+          RegExp regex = RegExp(
+              r"^(\d+)hrs (\d+)min"); // Match digits followed by "hrs" and "min"
 
-        Match? match = regex.firstMatch(timeString);
-        if (match != null) {
-          String hoursString = match.group(1)!;
-          String minutesString = match.group(2)!;
-          hours = int.parse(hoursString);
-          minutes = int.parse(minutesString);
-          // Convert total time to hours (considering minutes as fractions of hours)
-          workedHours = hours + minutes / 60.0;
-        } else {
-          // Handle invalid format (e.g., only "hrs")
-          print("Invalid time format: $timeString");
-          hours = 0; // Or provide a default value
-          minutes = 0;
-          workedHours = 0;
+          Match? match = regex.firstMatch(timeString);
+          if (match != null) {
+            String hoursString = match.group(1)!;
+            String minutesString = match.group(2)!;
+            hours = int.parse(hoursString);
+            minutes = int.parse(minutesString);
+            // Convert total time to hours (considering minutes as fractions of hours)
+            workedHours = hours + minutes / 60.0;
+          } else {
+            // Handle invalid format (e.g., only "hrs")
+            print("Invalid time format: $timeString");
+            hours = 0; // Or provide a default value
+            minutes = 0;
+            workedHours = 0;
+          }
         }
-
       }
+
+      chartData.add(
+        BarChartGroupData(
+          x: i, // Use index for X-axis positioning
+          barRods: [
+            BarChartRodData(
+              toY: workedHours, // Total worked hours for the day
+              color: Color.fromRGBO(250, 195, 32, 1), // Set bar color
+            ),
+          ],
+        ),
+      );
     }
-    
-    chartData.add(
-      BarChartGroupData(
-        x: i, // Use index for X-axis positioning
-        barRods: [
-          BarChartRodData(
-            toY: workedHours, // Total worked hours for the day
-            color: Color.fromRGBO(250, 195, 32, 1), // Set bar color
-          ),
-        ],
-      ),
-    );
-  }
-  return chartData;
-  
+    return chartData;
   }
 
   Widget getTitles(double value, TitleMeta meta) {
@@ -153,6 +152,4 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
       child: text,
     );
   }
-
-
 }

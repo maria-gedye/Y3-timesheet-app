@@ -5,7 +5,7 @@ import 'package:timesheet_app/bar%20graph/bar_graph.dart';
 import 'package:timesheet_app/components/work_tile.dart';
 import 'package:timesheet_app/components/work_dialog.dart';
 import 'package:timesheet_app/components/weekly_hours_box.dart';
-import 'package:timesheet_app/components/extended_fab.dart';
+import 'package:timesheet_app/pages/timesheet_page.dart';
 
 import 'package:provider/provider.dart';
 import 'package:timesheet_app/data/work_data.dart';
@@ -47,47 +47,47 @@ class _HomePageState extends State<HomePage> {
           length: 3,
           child: Scaffold(
               // extended fab
-            floatingActionButtonLocation: ExpandableFab.location,
-            floatingActionButton: ExpandableFab(
-              key: _key,
-              
-              overlayStyle: ExpandableFabOverlayStyle(
-                // color: Colors.black.withOpacity(0.5),
-                blur: 5,
+              floatingActionButtonLocation: ExpandableFab.location,
+              floatingActionButton: ExpandableFab(
+                key: _key,
+
+                overlayStyle: ExpandableFabOverlayStyle(
+                  // color: Colors.black.withOpacity(0.5),
+                  blur: 5,
+                ),
+                // onOpen: () {
+                //   debugPrint('onOpen');
+                // },
+                // afterOpen: () {
+                //   debugPrint('afterOpen');
+                // },
+                // onClose: () {
+                //   debugPrint('onClose');
+                // },
+                // afterClose: () {
+                //   debugPrint('afterClose');
+                // },
+                children: [
+                  // add work shift button
+                  FloatingActionButton.large(
+                    // shape: const CircleBorder(),
+                    heroTag: null,
+                    onPressed: addWorkDialog,
+                    child: const Icon(Icons.work),
+                  ),
+                  // create timesheet button
+                  FloatingActionButton.large(
+                    // shape: const CircleBorder(),
+                    heroTag: null,
+                    child: const Icon(Icons.view_timeline),
+                    onPressed: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: ((context) => const TimesheetPage())));
+                      // close extended fab
+                    },
+                  ),
+                ],
               ),
-              // onOpen: () {
-              //   debugPrint('onOpen');
-              // },
-              // afterOpen: () {
-              //   debugPrint('afterOpen');
-              // },
-              // onClose: () {
-              //   debugPrint('onClose');
-              // },
-              // afterClose: () {
-              //   debugPrint('afterClose');
-              // },
-              children: [
-            // add work shift button
-                FloatingActionButton.large(
-                  // shape: const CircleBorder(),
-                  heroTag: null,
-                  onPressed: addWorkDialog,
-                  child: const Icon(Icons.work),
-                ),
-            // create timesheet button
-                FloatingActionButton.large(
-                  // shape: const CircleBorder(),
-                  heroTag: null,
-                  child: const Icon(Icons.view_timeline),
-                  onPressed: () {
-                    Navigator.of(context).push(
-                        MaterialPageRoute(builder: ((context) => const NextPage())));
-                  },
-                ),
-              ],
-            ),
-  
               backgroundColor: Color.fromRGBO(64, 46, 50, 1),
               appBar: AppBar(
                 // backlog change titles as user selects different tabs
@@ -142,7 +142,6 @@ class _HomePageState extends State<HomePage> {
                         child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        SizedBox(height: 20),
                         WorkTracker(),
                         SizedBox(height: 10),
 
@@ -162,6 +161,11 @@ class _HomePageState extends State<HomePage> {
                           padding: EdgeInsets.only(top: 30),
                           height: 200,
                           child: WeeklyBarChart()),
+                      SizedBox(height:20),
+                      Text(
+                        "All Entries",
+                        style: TextStyle(color: Colors.white, fontSize: 18),
+                      ),
 
                       Expanded(
                         // Work LIST
@@ -172,7 +176,6 @@ class _HomePageState extends State<HomePage> {
                               uniqueID: workList[index].uniqueID,
                               placeName: workList[index].placeName,
                               workedTime: workList[index].workedTime,
-                              // this needs reformatting somehow
                               workDate: workList[index].dateString,
                             );
                           },
@@ -181,7 +184,6 @@ class _HomePageState extends State<HomePage> {
                     ]),
                   ),
                 ]),
-                
               )));
     });
   }
