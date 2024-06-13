@@ -45,6 +45,7 @@ class _HomePageState extends State<HomePage> {
     return Consumer<WorkData>(builder: (context, value, child) {
       return DefaultTabController(
           length: 3,
+          initialIndex: 1,
           child: Scaffold(
               // extended fab
               floatingActionButtonLocation: ExpandableFab.location,

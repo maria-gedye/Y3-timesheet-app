@@ -13,6 +13,7 @@ class TimesheetPage extends StatefulWidget {
 
 class _TimesheetPageState extends State<TimesheetPage> {
   final DatabaseProvider _databaseProvider = DatabaseProvider();
+  List<bool> _isSelected = [];
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +28,12 @@ class _TimesheetPageState extends State<TimesheetPage> {
 // Retrieve a list of current week's workItems
           final filteredWorkItems = snapshot.data!;
           int hours, minutes;
-          // print(filteredWorkItems.isEmpty);
+
+// allow for seperate checkbox values
+        // Initialize _isSelected only when data is received
+          if (_isSelected.length != filteredWorkItems.length) {
+            _isSelected = List.generate(filteredWorkItems.length, (index) => false);
+          }
 
 // mapping snapshot.data to convert and sum all the filtered workedTimes in each WorkItem object
           double weeklyTotal = filteredWorkItems.fold(0.0, (sum, item) {
@@ -58,38 +64,56 @@ class _TimesheetPageState extends State<TimesheetPage> {
             return sum + workedHours;
           });
 
-          
           return Scaffold(
             backgroundColor: Color.fromRGBO(64, 46, 50, 1),
             appBar: AppBar(
+              // could add another tab menu here- 1> new timesheet 2> timesheets
               title: const Text('Create Timesheet'),
               backgroundColor: Color.fromRGBO(54, 40, 43, 1),
             ),
             body: Center(
               child: Column(
                 children: [
-                  SizedBox(height: 20,),
+                  SizedBox(
+                    height: 20,
+                  ),
                   Text(
-                    "Select items to add to your timesheet:", 
+                    "Select items to add to your timesheet:",
                     style: TextStyle(color: Colors.white, fontSize: 18),
                   ),
-                  SizedBox(height: 20,),
-                  
+                  SizedBox(
+                    height: 20,
+                  ),
+
                   // show workItems in a Listview with a checkbox next to each item
                   Expanded(
                     child: ListView.builder(
                       itemCount: filteredWorkItems.length,
                       itemBuilder: (context, index) {
-                        
-                        return WorkTileForTimesheetPage(
-                          uniqueID: filteredWorkItems[index].uniqueID,
-                          placeName: filteredWorkItems[index].placeName,
-                          workedTime: filteredWorkItems[index].workedTime,
-                          workDate: filteredWorkItems[index].dateString,
+                        return ListTile(
+                          leading: Checkbox(
+                            value: _isSelected[index],
+                            activeColor: Color.fromRGBO(250, 195, 32, 1),
+                            onChanged: (newValue) {
+                              setState(() {
+                                _isSelected[index] = newValue!;
+                              });
+                            },
+                          ),
+                          textColor: Colors.white,
+                          title: Text(filteredWorkItems[index].placeName),
+                          // subtitle: Text("$shortDate    Total: ${filteredWorkItems[index].workedTime}"),
                         );
+
+                        // return WorkTileForTimesheetPage(
+                        //   uniqueID: filteredWorkItems[index].uniqueID,
+                        //   placeName: filteredWorkItems[index].placeName,
+                        //   workedTime: filteredWorkItems[index].workedTime,
+                        //   workDate: filteredWorkItems[index].dateString,
+                        // );
                       },
                     ),
-                    ),
+                  ),
 
                   // Display total hours from user's selection
                   // Text(
@@ -98,9 +122,7 @@ class _TimesheetPageState extends State<TimesheetPage> {
                   //   ),
 
                   // save button creates a TimesheetItem object and sends to firestore
-
                 ],
-                
               ),
             ),
           );
@@ -109,4 +131,3 @@ class _TimesheetPageState extends State<TimesheetPage> {
     );
   }
 }
-
