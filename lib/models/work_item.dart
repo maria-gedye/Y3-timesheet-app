@@ -18,4 +18,13 @@ class WorkItem {
     required this.dateString,
     required this.dateTime,
   });
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is WorkItem && other.uniqueID == uniqueID;
+  }
+
+  @override
+  int get hashCode => uniqueID.hashCode;
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:timesheet_app/components/my_button.dart';
 
 import 'package:timesheet_app/models/work_item.dart';
 import 'package:timesheet_app/providers/database_provider.dart';
@@ -13,6 +14,7 @@ class TimesheetPage extends StatefulWidget {
 class _TimesheetPageState extends State<TimesheetPage> {
   final DatabaseProvider _databaseProvider = DatabaseProvider();
   List<bool> _isSelected = [];
+  Set<WorkItem> selectedWorkItems = {};
   int hours = 0, minutes = 0;
   double newTotal = 0;
 
@@ -30,13 +32,18 @@ class _TimesheetPageState extends State<TimesheetPage> {
       double minutes = double.parse(minutesString);
 
       // Convert total time to hours (considering minutes as fractions)
-      return hours + minutes / 60.0;
+      double totalHours = hours + minutes / 60.0;
+
+      // Shorten the decimal value to one digit
+      return double.parse(totalHours.toStringAsFixed(1));
     } else {
       // Handle invalid format
       print("Invalid time format: $timeString");
-      return 0.0; // Or provide a default value
+      return 0.0;
     }
   }
+
+  createTimesheet(List<WorkItem> objects) {}
 
   @override
   Widget build(BuildContext context) {
@@ -90,22 +97,35 @@ class _TimesheetPageState extends State<TimesheetPage> {
                         return ListTile(
                           leading: Checkbox(
                             value: _isSelected[index],
+                            hoverColor: Color.fromRGBO(250, 195, 32, 1),
                             activeColor: Color.fromRGBO(250, 195, 32, 1),
                             onChanged: (newValue) {
                               setState(() {
                                 _isSelected[index] = newValue!;
 
                                 if (newValue) {
-                                    // get an item's workedTime String and convert to a number
-                                    double workedTime = convertWorkedTimeToHours(
-                                        filteredWorkItems[index]);
-                                    newTotal += workedTime;
-                                    
-                                  } else {
                                   // get an item's workedTime String and convert to a number
                                   double workedTime = convertWorkedTimeToHours(
-                                        filteredWorkItems[index]);
+                                      filteredWorkItems[index]);
+                                  newTotal += workedTime;
+
+                                  // if it doesn't already exist in selectedWorkItems
+                                  if (!selectedWorkItems
+                                      .contains(filteredWorkItems[index])) {
+                                    selectedWorkItems
+                                        .add(filteredWorkItems[index]);
+                                  }
+                                } else {
+                                  // get an item's workedTime String and convert to a number
+                                  double workedTime = convertWorkedTimeToHours(
+                                      filteredWorkItems[index]);
                                   newTotal = newTotal - workedTime;
+                                // uses custom == operator within contains
+                                  if (selectedWorkItems.contains(filteredWorkItems[index])) {
+                                    print('does contain matching object');
+                                    selectedWorkItems
+                                        .remove(filteredWorkItems[index]);
+                                  }
                                 }
                               });
                             },
@@ -123,16 +143,31 @@ class _TimesheetPageState extends State<TimesheetPage> {
                   Container(
                     height: 200,
                     decoration: BoxDecoration(
-                        color: Color.fromARGB(255, 73, 53, 57),
+                        color: Color.fromRGBO(164, 142, 101, 1),
                         borderRadius: BorderRadius.circular(10.0)),
                     child: Column(
                       children: [
+                        SizedBox(
+                          height: 20,
+                        ),
                         Text(
                           "Total hours this week: $newTotal",
                           style: TextStyle(color: Colors.white, fontSize: 20),
                         ),
-
+                        SizedBox(
+                          height: 20,
+                        ),
                         // save button creates a TimesheetItem object and sends to firestore
+                        MyButton(
+                          onTap: () {
+                            for (WorkItem object in selectedWorkItems) {
+                              print("ID: ${object.uniqueID}");
+                              print("place: ${object.placeName}");
+                              // ... print other properties
+                            }
+                          },
+                          text: 'Create Timesheet',
+                        )
                       ],
                     ),
                   ),

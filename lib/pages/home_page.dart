@@ -51,7 +51,6 @@ class _HomePageState extends State<HomePage> {
               floatingActionButtonLocation: ExpandableFab.location,
               floatingActionButton: ExpandableFab(
                 key: _key,
-
                 overlayStyle: ExpandableFabOverlayStyle(
                   // color: Colors.black.withOpacity(0.5),
                   blur: 5,
@@ -73,7 +72,6 @@ class _HomePageState extends State<HomePage> {
                   ),
                   // create timesheet button
                   FloatingActionButton.large(
-                    // shape: const CircleBorder(),
                     heroTag: null,
                     child: const Icon(Icons.view_timeline),
                     onPressed: () {
