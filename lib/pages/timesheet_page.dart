@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'package:timesheet_app/models/work_item.dart';
 import 'package:timesheet_app/providers/database_provider.dart';
-import 'package:timesheet_app/components/work_tile.dart';
 
 class TimesheetPage extends StatefulWidget {
   const TimesheetPage({Key? key}) : super(key: key);
@@ -14,6 +13,30 @@ class TimesheetPage extends StatefulWidget {
 class _TimesheetPageState extends State<TimesheetPage> {
   final DatabaseProvider _databaseProvider = DatabaseProvider();
   List<bool> _isSelected = [];
+  int hours = 0, minutes = 0;
+  double newTotal = 0;
+
+  double convertWorkedTimeToHours(WorkItem workItem) {
+    String timeString = workItem.workedTime;
+
+    // Use a regular expression to match hours and minutes
+    RegExp regex = RegExp(r"^(\d+)hrs (\d+)min");
+    Match? match = regex.firstMatch(timeString);
+
+    if (match != null) {
+      String hoursString = match.group(1)!;
+      String minutesString = match.group(2)!;
+      double hours = double.parse(hoursString);
+      double minutes = double.parse(minutesString);
+
+      // Convert total time to hours (considering minutes as fractions)
+      return hours + minutes / 60.0;
+    } else {
+      // Handle invalid format
+      print("Invalid time format: $timeString");
+      return 0.0; // Or provide a default value
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,42 +50,13 @@ class _TimesheetPageState extends State<TimesheetPage> {
         } else {
 // Retrieve a list of current week's workItems
           final filteredWorkItems = snapshot.data!;
-          int hours, minutes;
 
 // allow for seperate checkbox values
-        // Initialize _isSelected only when data is received
+          // Initialize _isSelected only when data is received
           if (_isSelected.length != filteredWorkItems.length) {
-            _isSelected = List.generate(filteredWorkItems.length, (index) => false);
+            _isSelected =
+                List.generate(filteredWorkItems.length, (index) => false);
           }
-
-// mapping snapshot.data to convert and sum all the filtered workedTimes in each WorkItem object
-          double weeklyTotal = filteredWorkItems.fold(0.0, (sum, item) {
-            String timeString = item.workedTime; // 9hrs 30min
-
-            // convert workedTime from string into double using RegEx
-            RegExp regex = RegExp(
-                r"^(\d+)hrs (\d+)min"); // Match digits followed by "hrs" and "min"
-
-            Match? match = regex.firstMatch(timeString);
-            double workedHours;
-
-            if (match != null) {
-              String hoursString = match.group(1)!;
-              String minutesString = match.group(2)!;
-              hours = int.parse(hoursString);
-              minutes = int.parse(minutesString);
-              // Convert total time to hours (considering minutes as fractions of hours)
-              workedHours = hours + minutes / 60.0;
-            } else {
-              // Handle invalid format (e.g., only "hrs")
-              print("Invalid time format: $timeString");
-              hours = 0; // Or provide a default value
-              minutes = 0;
-              workedHours = 0;
-            }
-
-            return sum + workedHours;
-          });
 
           return Scaffold(
             backgroundColor: Color.fromRGBO(64, 46, 50, 1),
@@ -90,6 +84,9 @@ class _TimesheetPageState extends State<TimesheetPage> {
                     child: ListView.builder(
                       itemCount: filteredWorkItems.length,
                       itemBuilder: (context, index) {
+                        String shortDate = filteredWorkItems[index]
+                            .dateString
+                            .substring(0, 10);
                         return ListTile(
                           leading: Checkbox(
                             value: _isSelected[index],
@@ -97,31 +94,48 @@ class _TimesheetPageState extends State<TimesheetPage> {
                             onChanged: (newValue) {
                               setState(() {
                                 _isSelected[index] = newValue!;
+
+                                if (newValue) {
+                                    // get an item's workedTime String and convert to a number
+                                    double workedTime = convertWorkedTimeToHours(
+                                        filteredWorkItems[index]);
+                                    newTotal += workedTime;
+                                    
+                                  } else {
+                                  // get an item's workedTime String and convert to a number
+                                  double workedTime = convertWorkedTimeToHours(
+                                        filteredWorkItems[index]);
+                                  newTotal = newTotal - workedTime;
+                                }
                               });
                             },
                           ),
                           textColor: Colors.white,
                           title: Text(filteredWorkItems[index].placeName),
-                          // subtitle: Text("$shortDate    Total: ${filteredWorkItems[index].workedTime}"),
+                          subtitle: Text(
+                              "$shortDate    Total: ${filteredWorkItems[index].workedTime}"),
                         );
-
-                        // return WorkTileForTimesheetPage(
-                        //   uniqueID: filteredWorkItems[index].uniqueID,
-                        //   placeName: filteredWorkItems[index].placeName,
-                        //   workedTime: filteredWorkItems[index].workedTime,
-                        //   workDate: filteredWorkItems[index].dateString,
-                        // );
                       },
                     ),
                   ),
 
                   // Display total hours from user's selection
-                  // Text(
-                  //     "Hours worked this week: $weeklyTotal",
-                  //     style: TextStyle(color: Colors.white, fontSize: 20),
-                  //   ),
+                  Container(
+                    height: 200,
+                    decoration: BoxDecoration(
+                        color: Color.fromARGB(255, 73, 53, 57),
+                        borderRadius: BorderRadius.circular(10.0)),
+                    child: Column(
+                      children: [
+                        Text(
+                          "Total hours this week: $newTotal",
+                          style: TextStyle(color: Colors.white, fontSize: 20),
+                        ),
 
-                  // save button creates a TimesheetItem object and sends to firestore
+                        // save button creates a TimesheetItem object and sends to firestore
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
