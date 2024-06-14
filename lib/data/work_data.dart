@@ -42,84 +42,43 @@ class WorkData extends ChangeNotifier {
   }
 
   // get weekday from dateTime object
-  int getDayNumber(String day) {
-    switch (day) {
-      case 'Sunday':
+  int getDayNumber(DateTime day) {
+    switch (day.weekday) {
+      case DateTime.sunday:
         return 1;
-      case 'Monday':
+      case DateTime.monday:
         return 2;
-      case 'Tuesday':
+      case DateTime.tuesday:
         return 3;
-      case 'Wednesday':
+      case DateTime.wednesday:
         return 4;
-      case 'Thursday':
+      case DateTime.thursday:
         return 5;
-      case 'Friday':
+      case DateTime.friday:
         return 6;
-      case 'Saturday':
+      case DateTime.saturday:
         return 7;
       default:
         return 0;
     }
   }
-}
+
+
+
   // get date for start of the week
-//   DateTime startOfWeekDate() {
-//     DateTime? startOfWeek;
+  DateTime startOfWeekDate() {
+    DateTime? startOfWeek;
 
-//     // get todays date
-//     DateTime today = DateTime.now();
+    // get todays date
+    DateTime today = DateTime.now();
 
-//     // go backwards from today to find sunday
-//     for (int i = 0; i < 7; i++) {
-//       if (getDayName(today.subtract(Duration(days: i))) == 'Sun') {
-//         startOfWeek = today.subtract(Duration(days: i));
-//       }
-//     }
-//     return startOfWeek!;
-//   }
-// }
+    // go backwards from today to find sunday
+    for (int i = 0; i < 7; i++) {
+      if (getDayNumber(today.subtract(Duration(days: i))) == 1) {
+        startOfWeek = today.subtract(Duration(days: i));
+      }
+    }
+    return startOfWeek!;
+  }
 
-// old method
-//   Map<String, double> calculateWeeklyWorkSummary() {
-//     Map<String, double> weeklyWorkSummary = {
-//       //startingdate (yyyymmdd) : Totalhours
-//     };
-//     // reuse this method to check starting date for any work
-//     DateTime getStartOfWeekDate(DateTime workDate) {
-//       DateTime? startOfWeek;
-//       // go backwards from a work's date to find sunday
-//       for (int i = 0; i < 7; i++) {
-//         if (getDayName(workDate.subtract(Duration(days: i))) == 'Sun') {
-//           startOfWeek = workDate.subtract(Duration(days: i));
-//         }
-//       }
-//       return startOfWeek!;
-//     }
-
-//     for (var work in overallWorkList) {
-//       String dateStr = work.dateTime;
-//       DateTime dateTime = DateTime.parse(dateStr);
-
-//       String startWeekDate =
-//           convertDateTimeToSTring(getStartOfWeekDate(dateTime));
-//       double hours = double.parse(
-//           work.workedTime); // turn string into double to do the math
-
-// // if works starts in the same week:
-//       if (weeklyWorkSummary.containsKey(startWeekDate)) {
-//         double currentHours =
-//             weeklyWorkSummary[startWeekDate]!; // if date already exist in map
-//         currentHours += hours; // add hours on
-//         weeklyWorkSummary[startWeekDate] = currentHours;
-//       } else {
-//         weeklyWorkSummary.addAll({
-//           startWeekDate: hours
-//         }); // else if its a new date, add date and hours
-//       }
-//     }
-
-//     return weeklyWorkSummary;
-//   }
-
-  // ONEDAY combine all works for a monthly view
+} // end of class

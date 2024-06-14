@@ -27,4 +27,19 @@ class WorkItem {
 
   @override
   int get hashCode => uniqueID.hashCode;
+
+  toMap() {
+    Map<String, dynamic> workItem = {
+      'PlaceName': placeName,
+      'StartTime': startTime,
+      'EndTime': endTime,
+      'WorkedTime': workedTime,
+      'DateTime': dateTime,
+      'UniqueID': uniqueID,
+      'Address': address,
+      'DateString': dateString
+    };
+
+    return workItem;
+  }
 }

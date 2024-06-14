@@ -4,7 +4,6 @@ import 'package:timesheet_app/data/work_data.dart';
 import 'package:timesheet_app/models/work_item.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-//import 'package:timesheet_app/pages/home_page.dart';
 
 class WorkDialog extends StatefulWidget {
   const WorkDialog({super.key});
@@ -26,8 +25,6 @@ class _WorkDialogState extends State<WorkDialog> {
   TimeOfDay endTimeDialog = TimeOfDay(hour: 0, minute: 0);
 
   final user = FirebaseAuth.instance.currentUser!;
-  //final HomePage _homePageState;
-  //_WorkDialogState(this._homePageState);
 
   // datepicker method
   Future<void> _selectDate() async {

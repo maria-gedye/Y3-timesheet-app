@@ -1,8 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:timesheet_app/components/my_button.dart';
+import 'package:timesheet_app/models/timesheet_item.dart';
 
 import 'package:timesheet_app/models/work_item.dart';
 import 'package:timesheet_app/providers/database_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:timesheet_app/data/work_data.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class TimesheetPage extends StatefulWidget {
   const TimesheetPage({Key? key}) : super(key: key);
@@ -13,6 +18,7 @@ class TimesheetPage extends StatefulWidget {
 
 class _TimesheetPageState extends State<TimesheetPage> {
   final DatabaseProvider _databaseProvider = DatabaseProvider();
+  final user = FirebaseAuth.instance.currentUser!;
   List<bool> _isSelected = [];
   Set<WorkItem> selectedWorkItems = {};
   int hours = 0, minutes = 0;
@@ -43,7 +49,45 @@ class _TimesheetPageState extends State<TimesheetPage> {
     }
   }
 
-  createTimesheet(List<WorkItem> objects) {}
+  createTimesheet(Set<WorkItem> objects) {
+    // convert set to a list
+    List<WorkItem> workList = objects.toList();
+    // create instance of timesheet object
+    TimesheetItem newTimesheet = TimesheetItem(
+        uniqueID:
+            Provider.of<WorkData>(context, listen: false).generateRandomId(),
+        workItems: workList, 
+        weekStarting: Provider.of<WorkData>(context, listen: false).startOfWeekDate(),
+        totalTime: newTotal
+    );
+
+    try { 
+      // access firestore collection
+      CollectionReference collectionRef =
+          FirebaseFirestore.instance.collection('${user.email}');
+
+      DocumentReference timesheetDocRef = collectionRef.doc('timesheets');
+
+      // reference to the subcollection 
+      CollectionReference timesheetsCollection = timesheetDocRef.collection('timesheetItems');
+
+// create new document for firestore
+      Map<String, dynamic> timesheetData = {
+        'uniqueID': newTimesheet.uniqueID,
+        'workItems': newTimesheet.workItems.map((item) => item.toMap()).toList(),
+        'weekStarting': newTimesheet.weekStarting,
+        'totalTime': newTimesheet.totalTime
+      };
+
+      timesheetsCollection.add(timesheetData).then((_) => {
+        print('Timesheet added successfully!')
+      });
+
+    } catch (error) {
+      print('Error adding document: $error');
+    }
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -120,8 +164,9 @@ class _TimesheetPageState extends State<TimesheetPage> {
                                   double workedTime = convertWorkedTimeToHours(
                                       filteredWorkItems[index]);
                                   newTotal = newTotal - workedTime;
-                                // uses custom == operator within contains
-                                  if (selectedWorkItems.contains(filteredWorkItems[index])) {
+                                  // uses custom == operator within contains
+                                  if (selectedWorkItems
+                                      .contains(filteredWorkItems[index])) {
                                     print('does contain matching object');
                                     selectedWorkItems
                                         .remove(filteredWorkItems[index]);
@@ -160,11 +205,7 @@ class _TimesheetPageState extends State<TimesheetPage> {
                         // save button creates a TimesheetItem object and sends to firestore
                         MyButton(
                           onTap: () {
-                            for (WorkItem object in selectedWorkItems) {
-                              print("ID: ${object.uniqueID}");
-                              print("place: ${object.placeName}");
-                              // ... print other properties
-                            }
+                            createTimesheet(selectedWorkItems);
                           },
                           text: 'Create Timesheet',
                         )
