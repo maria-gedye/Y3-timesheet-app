@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:timesheet_app/components/my_button.dart';
 import 'package:timesheet_app/models/timesheet_item.dart';
+import 'package:timesheet_app/components/timesheet_tile.dart';
 
 import 'package:timesheet_app/models/work_item.dart';
 import 'package:timesheet_app/providers/database_provider.dart';
@@ -56,37 +57,54 @@ class _TimesheetPageState extends State<TimesheetPage> {
     TimesheetItem newTimesheet = TimesheetItem(
         uniqueID:
             Provider.of<WorkData>(context, listen: false).generateRandomId(),
-        workItems: workList, 
-        weekStarting: Provider.of<WorkData>(context, listen: false).startOfWeekDate(),
-        totalTime: newTotal
-    );
+        workItems: workList,
+        weekStarting:
+            Provider.of<WorkData>(context, listen: false).startOfWeekDate(),
+        totalTime: newTotal);
 
-    try { 
+    try {
       // access firestore collection
       CollectionReference collectionRef =
           FirebaseFirestore.instance.collection('${user.email}');
 
       DocumentReference timesheetDocRef = collectionRef.doc('timesheets');
 
-      // reference to the subcollection 
-      CollectionReference timesheetsCollection = timesheetDocRef.collection('timesheetItems');
+      // reference to the subcollection
+      CollectionReference timesheetsCollection =
+          timesheetDocRef.collection('timesheetItems');
 
 // create new document for firestore
       Map<String, dynamic> timesheetData = {
         'uniqueID': newTimesheet.uniqueID,
-        'workItems': newTimesheet.workItems.map((item) => item.toMap()).toList(),
+        'workItems':
+            newTimesheet.workItems.map((item) => item.toMap()).toList(),
         'weekStarting': newTimesheet.weekStarting,
         'totalTime': newTimesheet.totalTime
       };
 
       timesheetsCollection.add(timesheetData).then((_) => {
-        print('Timesheet added successfully!')
-      });
-
+            print('Timesheet added successfully!'),
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: Text('Timesheet Saved!'),
+                content:
+                    Text('Your timesheet data has been saved successfully.'),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Text('OK'),
+                  ),
+                ],
+                backgroundColor: Color.fromRGBO(250, 195, 32, 1),
+              ),
+            )
+          });
     } catch (error) {
       print('Error adding document: $error');
     }
-
   }
 
   @override
@@ -109,111 +127,159 @@ class _TimesheetPageState extends State<TimesheetPage> {
                 List.generate(filteredWorkItems.length, (index) => false);
           }
 
-          return Scaffold(
-            backgroundColor: Color.fromRGBO(64, 46, 50, 1),
-            appBar: AppBar(
-              // could add another tab menu here- 1> new timesheet 2> timesheets
-              title: const Text('Create Timesheet'),
-              backgroundColor: Color.fromRGBO(54, 40, 43, 1),
-            ),
-            body: Center(
-              child: Column(
-                children: [
-                  SizedBox(
-                    height: 20,
-                  ),
-                  Text(
-                    "Select items to add to your timesheet:",
-                    style: TextStyle(color: Colors.white, fontSize: 18),
-                  ),
-                  SizedBox(
-                    height: 20,
-                  ),
-
-                  // show workItems in a Listview with a checkbox next to each item
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: filteredWorkItems.length,
-                      itemBuilder: (context, index) {
-                        String shortDate = filteredWorkItems[index]
-                            .dateString
-                            .substring(0, 10);
-                        return ListTile(
-                          leading: Checkbox(
-                            value: _isSelected[index],
-                            hoverColor: Color.fromRGBO(250, 195, 32, 1),
-                            activeColor: Color.fromRGBO(250, 195, 32, 1),
-                            onChanged: (newValue) {
-                              setState(() {
-                                _isSelected[index] = newValue!;
-
-                                if (newValue) {
-                                  // get an item's workedTime String and convert to a number
-                                  double workedTime = convertWorkedTimeToHours(
-                                      filteredWorkItems[index]);
-                                  newTotal += workedTime;
-
-                                  // if it doesn't already exist in selectedWorkItems
-                                  if (!selectedWorkItems
-                                      .contains(filteredWorkItems[index])) {
-                                    selectedWorkItems
-                                        .add(filteredWorkItems[index]);
-                                  }
-                                } else {
-                                  // get an item's workedTime String and convert to a number
-                                  double workedTime = convertWorkedTimeToHours(
-                                      filteredWorkItems[index]);
-                                  newTotal = newTotal - workedTime;
-                                  // uses custom == operator within contains
-                                  if (selectedWorkItems
-                                      .contains(filteredWorkItems[index])) {
-                                    print('does contain matching object');
-                                    selectedWorkItems
-                                        .remove(filteredWorkItems[index]);
-                                  }
-                                }
-                              });
-                            },
-                          ),
-                          textColor: Colors.white,
-                          title: Text(filteredWorkItems[index].placeName),
-                          subtitle: Text(
-                              "$shortDate    Total: ${filteredWorkItems[index].workedTime}"),
-                        );
-                      },
+          return DefaultTabController(
+            length: 2,
+            // initialIndex: 1,
+            child: Scaffold(
+              backgroundColor: Color.fromRGBO(64, 46, 50, 1),
+              appBar: AppBar(
+                title: const Text('Timesheets'),
+                backgroundColor: Color.fromRGBO(54, 40, 43, 1),
+                bottom: const TabBar(
+                  tabs: <Widget>[
+                    Tab(
+                      text: 'Create',
                     ),
-                  ),
-
-                  // Display total hours from user's selection
-                  Container(
-                    height: 200,
-                    decoration: BoxDecoration(
-                        color: Color.fromRGBO(164, 142, 101, 1),
-                        borderRadius: BorderRadius.circular(10.0)),
-                    child: Column(
-                      children: [
-                        SizedBox(
-                          height: 20,
-                        ),
-                        Text(
-                          "Total hours this week: $newTotal",
-                          style: TextStyle(color: Colors.white, fontSize: 20),
-                        ),
-                        SizedBox(
-                          height: 20,
-                        ),
-                        // save button creates a TimesheetItem object and sends to firestore
-                        MyButton(
-                          onTap: () {
-                            createTimesheet(selectedWorkItems);
-                          },
-                          text: 'Create Timesheet',
-                        )
-                      ],
-                    ),
-                  ),
-                ],
+                    Tab(text: 'All'),
+                  ],
+                ),
               ),
+              body: TabBarView(children: <Widget>[
+                // create timesheet tab
+                Center(
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        height: 20,
+                      ),
+                      Text(
+                        "Select items to add to your timesheet:",
+                        style: TextStyle(color: Colors.white, fontSize: 18),
+                      ),
+                      SizedBox(
+                        height: 20,
+                      ),
+
+                      // show workItems in a Listview with a checkbox next to each item
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: filteredWorkItems.length,
+                          itemBuilder: (context, index) {
+                            String shortDate = filteredWorkItems[index]
+                                .dateString
+                                .substring(0, 10);
+                            return ListTile(
+                              leading: Checkbox(
+                                value: _isSelected[index],
+                                hoverColor: Color.fromRGBO(250, 195, 32, 1),
+                                activeColor: Color.fromRGBO(250, 195, 32, 1),
+                                onChanged: (newValue) {
+                                  setState(() {
+                                    _isSelected[index] = newValue!;
+
+                                    if (newValue) {
+                                      // get an item's workedTime String and convert to a number
+                                      double workedTime =
+                                          convertWorkedTimeToHours(
+                                              filteredWorkItems[index]);
+                                      newTotal += workedTime;
+
+                                      // if it doesn't already exist in selectedWorkItems
+                                      if (!selectedWorkItems
+                                          .contains(filteredWorkItems[index])) {
+                                        selectedWorkItems
+                                            .add(filteredWorkItems[index]);
+                                      }
+                                    } else {
+                                      // get an item's workedTime String and convert to a number
+                                      double workedTime =
+                                          convertWorkedTimeToHours(
+                                              filteredWorkItems[index]);
+                                      newTotal = newTotal - workedTime;
+                                      // uses custom == operator within contains
+                                      if (selectedWorkItems
+                                          .contains(filteredWorkItems[index])) {
+                                        print('does contain matching object');
+                                        selectedWorkItems
+                                            .remove(filteredWorkItems[index]);
+                                      }
+                                    }
+                                  });
+                                },
+                              ),
+                              textColor: Colors.white,
+                              title: Text(filteredWorkItems[index].placeName),
+                              subtitle: Text(
+                                  "$shortDate    Total: ${filteredWorkItems[index].workedTime}"),
+                            );
+                          },
+                        ),
+                      ),
+
+                      // Display total hours from user's selection
+                      Container(
+                        height: 200,
+                        decoration: BoxDecoration(
+                            color: Color.fromRGBO(164, 142, 101, 1),
+                            borderRadius: BorderRadius.circular(10.0)),
+                        child: Column(
+                          children: [
+                            SizedBox(
+                              height: 20,
+                            ),
+                            Text(
+                              "Total hours this week: $newTotal",
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 20),
+                            ),
+                            SizedBox(
+                              height: 20,
+                            ),
+                            // save button creates a TimesheetItem object and sends to firestore
+                            MyButton(
+                              onTap: () {
+                                createTimesheet(selectedWorkItems);
+                              },
+                              text: 'Create Timesheet',
+                            )
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // all timesheets tab
+                Center(
+                  child: StreamBuilder<List<TimesheetItem>>(
+                    stream: _databaseProvider.timesheetItems,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasError) {
+                         print("data: ${snapshot.data}  and the error is: ${snapshot.error}");
+                        return Text('Boo-Error: ${snapshot.error}');
+                      }
+
+                      if (!snapshot.hasData) {
+                        return CircularProgressIndicator();
+                      }
+
+                      final timesheetList = snapshot.data!;
+                      // Display the list of timesheet items (e.g., in a ListView)
+                      return ListView.builder(
+                        itemCount: timesheetList.length,
+                        itemBuilder: (context, index) {
+                          final timesheetItem = timesheetList[index];
+                          // timesheet date and ID
+                          return TimesheetTile(
+                            uniqueID: timesheetItem.uniqueID,
+                            weekStarting: timesheetItem.weekStarting.toString(),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                )
+              ]),
             ),
           );
         }

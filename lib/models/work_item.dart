@@ -30,15 +30,30 @@ class WorkItem {
 
   toMap() {
     Map<String, dynamic> workItem = {
-      'PlaceName': placeName,
-      'StartTime': startTime,
-      'EndTime': endTime,
-      'WorkedTime': workedTime,
-      'DateTime': dateTime,
       'UniqueID': uniqueID,
+      'PlaceName': placeName,
       'Address': address,
+      'WorkedTime': workedTime,
+      'StartTime': startTime,
+      'EndTime': endTime,   
+      'DateTime': dateTime,   
       'DateString': dateString
     };
+
+    return workItem;
+  }
+
+  static fromMap(Map<String, dynamic> object) {
+    WorkItem workItem = WorkItem(
+      uniqueID: object["UniqueID"],
+        placeName: object["PlaceName"],
+        address: object["Address"],
+        workedTime: object["WorkedTime"],
+        startTime: object["StartTime"],
+        endTime: object["EndTime"],
+        dateString: object["DateString"],
+        dateTime: object["DateTime"].toDate()
+    );
 
     return workItem;
   }

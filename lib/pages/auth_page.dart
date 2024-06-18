@@ -21,6 +21,10 @@ class AuthPage extends StatelessWidget {
  
                 // add stream provider to access firestore data
                 return StreamProvider<List<WorkItem>>.value(
+                    catchError: (context, error)  {
+                      debugPrint('StreamProvider Error: $error'); // Print the error message
+                      return []; // Return an empty stream
+                    },
                     initialData: [],
                     value: DatabaseProvider().workItems,
                     child: HomePage());

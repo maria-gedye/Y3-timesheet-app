@@ -27,7 +27,7 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<List<WorkItem>>(
-      stream: _databaseProvider.workItems, // Access the stream
+      stream: _databaseProvider.weeklyWorkItems, // Access the stream
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           // query for data that exists in the current week here
@@ -58,6 +58,7 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
           );
         } else if (snapshot.hasError) {
           debugPrint('Bar Chart Error: ${snapshot.error}');
+
           return Text('Bar Chart Error: ${snapshot.error}');
         }
         return const CircularProgressIndicator(); // Loading indicator
