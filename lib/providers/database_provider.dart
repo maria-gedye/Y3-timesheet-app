@@ -6,7 +6,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 class DatabaseProvider {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final user = FirebaseAuth.instance.currentUser!;
-
+  final userID = FirebaseAuth.instance.currentUser?.uid;
+  
 // create a get weeklyWorkItems
   Stream<List<WorkItem>> get weeklyWorkItems {
     DateTime now = DateTime.now();
@@ -72,4 +73,22 @@ class DatabaseProvider {
                     ))
                 .toList());
   }
+
+  Future<int> getCounterForUser(String? userID) async {
+    final docRef = FirebaseFirestore.instance.collection('counters').doc(userID);
+    final docSnapshot = await docRef.get();
+    if (docSnapshot.exists) {
+      return docSnapshot.data()!['counter'] as int;
+    } else {
+      // Create a new document with counter set to 0
+      await docRef.set({'counter': 0});
+      return 0;
+    }
+  }
+
+  Future<void> setUserCounter(String? userID, int counter) async {
+    final docRef = FirebaseFirestore.instance.collection('counters').doc(userID);
+    await docRef.update({'counter': counter});
+  }
+
 }

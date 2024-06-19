@@ -81,7 +81,11 @@ class _WorkTileState extends State<WorkTile> {
                             'Document not found!'); // Handle case where document doesn't exist
                       }
                     }).catchError(
-                        (error) => print('Error fetching documents: $error'));
+                        (error) {
+                          print('Error fetching documents: $error');
+                          Text("deleteWork error: $error");
+                        }              
+                        );
 
                     Navigator.pop(context);
                   },

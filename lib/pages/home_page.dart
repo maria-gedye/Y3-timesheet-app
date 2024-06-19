@@ -154,7 +154,16 @@ class _HomePageState extends State<HomePage> {
                   // WOrkbook tab
                   Center(
                     child: Column(children: [
+                      SizedBox(height: 20),
                       // Bar GRAPH
+                      Text(
+                        "Weekly Hours",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
                       Container(
                           padding: EdgeInsets.only(top: 30),
                           height: 200,

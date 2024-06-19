@@ -154,3 +154,4 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
     );
   }
 }
+

@@ -20,6 +20,8 @@ class TimesheetPage extends StatefulWidget {
 class _TimesheetPageState extends State<TimesheetPage> {
   final DatabaseProvider _databaseProvider = DatabaseProvider();
   final user = FirebaseAuth.instance.currentUser!;
+  final userID = FirebaseAuth.instance.currentUser?.uid;
+
   List<bool> _isSelected = [];
   Set<WorkItem> selectedWorkItems = {};
   int hours = 0, minutes = 0;
@@ -50,13 +52,13 @@ class _TimesheetPageState extends State<TimesheetPage> {
     }
   }
 
-  createTimesheet(Set<WorkItem> objects) {
+  createTimesheet(Set<WorkItem> objects) async {
     // convert set to a list
     List<WorkItem> workList = objects.toList();
     // create instance of timesheet object
     TimesheetItem newTimesheet = TimesheetItem(
-        uniqueID:
-            Provider.of<WorkData>(context, listen: false).generateRandomId(),
+        uniqueID: await Provider.of<WorkData>(context, listen: false)
+            .generateCounterID(userID),
         workItems: workList,
         weekStarting:
             Provider.of<WorkData>(context, listen: false).startOfWeekDate(),
@@ -255,7 +257,8 @@ class _TimesheetPageState extends State<TimesheetPage> {
                     stream: _databaseProvider.timesheetItems,
                     builder: (context, snapshot) {
                       if (snapshot.hasError) {
-                         print("data: ${snapshot.data}  and the error is: ${snapshot.error}");
+                        print(
+                            "data: ${snapshot.data}  and the error is: ${snapshot.error}");
                         return Text('Boo-Error: ${snapshot.error}');
                       }
 
@@ -271,6 +274,7 @@ class _TimesheetPageState extends State<TimesheetPage> {
                           final timesheetItem = timesheetList[index];
                           // timesheet date and ID
                           return TimesheetTile(
+                            // make uniqueID => timesheet name
                             uniqueID: timesheetItem.uniqueID,
                             weekStarting: timesheetItem.weekStarting.toString(),
                           );

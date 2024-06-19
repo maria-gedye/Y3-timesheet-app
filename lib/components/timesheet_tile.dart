@@ -5,7 +5,7 @@ import 'package:timesheet_app/components/my_textfield.dart';
 
 
 class TimesheetTile extends StatefulWidget {
-  final String uniqueID;
+  final String? uniqueID;
   final String weekStarting;
 
   const TimesheetTile(
@@ -25,7 +25,8 @@ class _TimesheetTileState extends State<TimesheetTile> {
     showDialog(
         context: context,
         builder: (context) => AlertDialog(
-                title: const Text('Enter an email'),
+                title: const Text('Send to email'),
+                backgroundColor: Color.fromRGBO(250, 195, 32, 1),
                 content: MyTextField(
                     controller: emailText,
                     hintText: 'email',
@@ -33,13 +34,15 @@ class _TimesheetTileState extends State<TimesheetTile> {
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('Cancel'),
+                    child: const Text('Cancel', style: TextStyle(color:Color.fromRGBO(64, 46, 50, 1) ),),
                   ),
                   TextButton(
                     onPressed: () async {
                       // email trigger service
+                      // get timesheet object
+                      // cast object to email format
                     },
-                    child: const Text('Send'),
+                    child: const Text('Send', style: TextStyle(color:Color.fromRGBO(64, 46, 50, 1) ),),
                   )
                 ]));
   }
@@ -48,10 +51,10 @@ class _TimesheetTileState extends State<TimesheetTile> {
   Widget build(BuildContext context) {
     return ListTile(
       textColor: Colors.white,
-      title: Text(widget.uniqueID),
+      title: Text(widget.uniqueID!),
       subtitle: Text('Week starting:  ${widget.weekStarting}'),
       trailing: IconButton(
-        icon: Icon(Icons.send), 
+        icon: Icon(Icons.send, color: Color.fromRGBO(250, 195, 32, 1) ,), 
         onPressed: sendtoEmail,)
     );
   }
