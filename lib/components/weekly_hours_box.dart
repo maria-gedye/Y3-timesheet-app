@@ -52,7 +52,7 @@ class _WeeklyHoursBoxState extends State<WeeklyHoursBox> {
 
             return sum + workedHours;
           });
-          // Calculate total hours
+          // display total hours selected
           return Container(
             height: 50,
             decoration: BoxDecoration(
@@ -60,7 +60,7 @@ class _WeeklyHoursBoxState extends State<WeeklyHoursBox> {
                 borderRadius: BorderRadius.circular(10.0)),
             child: Align(
               child: Text(
-                "Hours worked this week: $weeklyTotal",
+                "Hours worked this week: ${weeklyTotal.toStringAsFixed(1)}",
                 style: TextStyle(color: Colors.white, fontSize: 20),
               ),
             ),

@@ -31,6 +31,7 @@ dependencies:
   charts_flutter: ^0.12.0
   fl_chart: ^0.62.0
   flutter_expandable_fab: ^2.0.0
+  flutter_email_sender: ^6.0.3
 
 
 

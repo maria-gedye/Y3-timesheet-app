@@ -277,6 +277,7 @@ class _TimesheetPageState extends State<TimesheetPage> {
                             // make uniqueID => timesheet name
                             uniqueID: timesheetItem.uniqueID,
                             weekStarting: timesheetItem.weekStarting.toString(),
+                            timesheet: timesheetItem,
                           );
                         },
                       );

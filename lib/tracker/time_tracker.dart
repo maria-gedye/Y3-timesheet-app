@@ -10,7 +10,6 @@ import 'package:provider/provider.dart';
 import 'package:timesheet_app/data/work_data.dart';
 import 'package:timesheet_app/models/work_item.dart';
 
-
 class WorkTracker extends StatefulWidget {
   const WorkTracker({super.key});
 
@@ -26,7 +25,6 @@ class _WorkTrackerState extends State<WorkTracker> {
   bool started = false;
   List works = [];
   int currentPageIndex = 0;
-  String placeNameStr = 'Add place name';
   String endTime = '', startTime = '';
   Position? _currentLocation;
   late bool servicePermission = false;
@@ -71,13 +69,14 @@ class _WorkTrackerState extends State<WorkTracker> {
     TimeOfDay now = TimeOfDay.now();
 
     setState(() {
-      openPlaceDialog();
 
       started = false;
       timerDuration();
       endTime =
           '${now.hour}:${now.minute} ${now.period.name}'; // get endTime str from now
-      saveTracker();
+
+      openPlaceDialog(); 
+      
     });
   }
 
@@ -97,7 +96,7 @@ class _WorkTrackerState extends State<WorkTracker> {
 
 // use this function to fill out workedTime property to be passed to new Work objects
   void timerDuration() {
-    String workTime = "$digitHours hrs $digitMinutes min";
+    String workTime = "${digitHours}hrs ${digitMinutes}min";
     setState(() {
       if (minutes > 0) {
         // add this duration to new Work obj's workedTime property via this global variable
@@ -140,13 +139,14 @@ class _WorkTrackerState extends State<WorkTracker> {
   }
 
   // put info into new Work object then save to overallWorkList []
-  void saveTracker() {
+  void saveTracker(String place) {
     String newID =
         Provider.of<WorkData>(context, listen: false).generateRandomId();
+    
     // create Work_item object via timetracker
     WorkItem newWork = WorkItem(
         uniqueID: newID,
-        placeName: placeNameStr,
+        placeName: place,
         address: _currentAddress,
         startTime: startTime,
         endTime: endTime,
@@ -159,8 +159,6 @@ class _WorkTrackerState extends State<WorkTracker> {
     print("manual Work added to overallWorkList []");
 
     sendWorkToDB(newWork); // saves new obj to firebase
-
-    placeNameStr = 'Add place name';
   }
 
   // user to enter place name before stopping timer
@@ -185,7 +183,9 @@ class _WorkTrackerState extends State<WorkTracker> {
                 // save dialog
                 MaterialButton(
                   onPressed: () {
-                    placeNameStr = newPlaceController.text;
+                    // saveTracker here
+                    saveTracker(newPlaceController.text);
+
                     Navigator.pop(context);
                     clearController(newPlaceController);
                   },
@@ -196,6 +196,7 @@ class _WorkTrackerState extends State<WorkTracker> {
                   onPressed: () {
                     Navigator.pop(context);
                     clearController(newPlaceController);
+                    _currentAddress = '';
                   },
                   child: const Text('Cancel'),
                 ),
@@ -207,7 +208,7 @@ class _WorkTrackerState extends State<WorkTracker> {
     a.clear();
   }
 
-    // sends Work item from list to firebase DB (also used in Work_dialog.dart)
+  // sends Work item from list to firebase DB (also used in Work_dialog.dart)
   void sendWorkToDB(WorkItem newWork) {
     if (newWork.startTime.isNotEmpty && newWork.endTime.isNotEmpty) {
       // store in firebase
@@ -223,101 +224,97 @@ class _WorkTrackerState extends State<WorkTracker> {
         // Add the address
       });
     }
+
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Clock in title
-        Text((!started) ? 'Clock in' : 'Clock out',
-            style: TextStyle(
-              color: Color.fromRGBO(250, 195, 32, 1),
-              fontSize: 30,
-            )),
+    return Column(children: [
+      // Clock in title
+      Text((!started) ? 'Clock in' : 'Clock out',
+          style: TextStyle(
+            color: Color.fromRGBO(250, 195, 32, 1),
+            fontSize: 30,
+          )),
 
-        SizedBox(height: 10),
+      SizedBox(height: 10),
 
-        // Current location display
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.place_rounded,
-              color: Colors.white,
-            ),
-            Flexible(
-              child: Column(children: [
-                Text(
-                  _currentAddress.isNotEmpty
-                      ? _currentAddress
-                      : 'unknown',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                  ),
-                  softWrap: true,
-                  overflow: TextOverflow.fade,
+      // Current location display
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.place_rounded,
+            color: Colors.white,
+          ),
+          Flexible(
+            child: Column(children: [
+              Text(
+                _currentAddress.isNotEmpty ? _currentAddress : 'unknown',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
                 ),
-              ]),
-            ),
-          ],
-        ),
+                softWrap: true,
+                overflow: TextOverflow.fade,
+              ),
+            ]),
+          ),
+        ],
+      ),
 
-        // Timer display
-        Text('$digitHours:$digitMinutes:$digitSeconds',
-            style: TextStyle(
-              color: Color.fromRGBO(250, 195, 32, 1),
-              fontSize: 60,
-            )),
+      // Timer display
+      Text('$digitHours:$digitMinutes:$digitSeconds',
+          style: TextStyle(
+            color: Color.fromRGBO(250, 195, 32, 1),
+            fontSize: 60,
+          )),
 
-        SizedBox(height: 10),
+      SizedBox(height: 10),
 
-        // clock in button
-        ElevatedButton(
-            onPressed: () async {
-              _currentLocation = await _getCurrentLocation();
-              await _getAddressFromCoordinates();
+      // clock in button
+      ElevatedButton(
+          onPressed: () async {
+            _currentLocation = await _getCurrentLocation();
+            await _getAddressFromCoordinates();
 
-              (!started) ? startTimer() : stopTimer();
-            },
-            style: ElevatedButton.styleFrom(
-                textStyle: TextStyle(
-                  fontSize: 50,
-                ),
-                backgroundColor: (!started)
-                    ? Color.fromRGBO(250, 195, 32, 1)
-                    : Color.fromRGBO(64, 46, 50, 1),
-                foregroundColor: (!started)
-                    ? Color.fromRGBO(64, 46, 50, 1)
-                    : Color.fromRGBO(250, 195, 32, 1),
-                fixedSize: Size.fromRadius(100),
-                shape: CircleBorder(),
-                shadowColor: Colors.black,
-                elevation: 10.0,
-                side: BorderSide(
-                  color: Color.fromRGBO(164, 142, 101, 1),
-                  width: 10.0,
-                )),
-            child: Text((!started) ? 'Start' : 'Stop')),
-
-        // cancel the timer
-        TextButton(
-            onPressed: () {
-              (started) ? reset() : null;
-            },
-            style: TextButton.styleFrom(
-              disabledForegroundColor: Colors.grey,
+            (!started) ? startTimer() : stopTimer();
+          },
+          style: ElevatedButton.styleFrom(
+              textStyle: TextStyle(
+                fontSize: 50,
+              ),
+              backgroundColor: (!started)
+                  ? Color.fromRGBO(250, 195, 32, 1)
+                  : Color.fromRGBO(64, 46, 50, 1),
               foregroundColor: (!started)
                   ? Color.fromRGBO(64, 46, 50, 1)
                   : Color.fromRGBO(250, 195, 32, 1),
-            ),
-            child: Text(
-              'Cancel',
-              style: TextStyle(fontSize: 16.0),
-            )),
+              fixedSize: Size.fromRadius(100),
+              shape: CircleBorder(),
+              shadowColor: Colors.black,
+              elevation: 10.0,
+              side: BorderSide(
+                color: Color.fromRGBO(164, 142, 101, 1),
+                width: 10.0,
+              )),
+          child: Text((!started) ? 'Start' : 'Stop')),
 
-      ]
-    );
+      // cancel the timer
+      TextButton(
+          onPressed: () {
+            (started) ? reset() : null;
+          },
+          style: TextButton.styleFrom(
+            disabledForegroundColor: Colors.grey,
+            foregroundColor: (!started)
+                ? Color.fromRGBO(64, 46, 50, 1)
+                : Color.fromRGBO(250, 195, 32, 1),
+          ),
+          child: Text(
+            'Cancel',
+            style: TextStyle(fontSize: 16.0),
+          )),
+    ]);
   }
 }
