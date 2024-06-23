@@ -78,11 +78,14 @@ class _TimesheetTileState extends State<TimesheetTile> {
 
     for (final workItem in timesheetItem.workItems) {
       String shortDate = workItem.dateString.substring(0, 10);
-      tableData += """CLIENT/VENUE: ${workItem.placeName} \n""";
-      tableData += """+-----------+---------+---------+---------+ \n
-      | DATE      | START   | FINISH  | TOTAL   | \n
-      +-----------+---------+---------+---------+ \n
-      |$shortDate |${workItem.startTime}|${workItem.endTime}|${workItem.workedTime}| \n""";
+      tableData += """<p>CLIENT/VENUE: ${workItem.placeName} \n </p>""";
+      tableData += """
+      <p>DATE: $shortDate </p>
+      <p>START TIME: ${workItem.startTime} </p>
+      <p>FINISH TIME: ${workItem.endTime} </p>
+      <p>TOTAL: ${workItem.workedTime}   </p>
+      <p>+-------------------------------------+ \n </p>
+""";
     }
 
     String startWeek = timesheetItem.weekStarting.toString();
@@ -91,10 +94,12 @@ class _TimesheetTileState extends State<TimesheetTile> {
     return """
       <h1>Timesheet Details</h1>
       <p><b>Week starting:</b> $shortStartWeek</p>
+      <p> </p>
+      <p> </p>
 
       $tableData
 
-      <p><b>Total Hours:</b> ${timesheetItem.totalTime}</p>
+      <p><b>TOTAL HOURS:</b> ${timesheetItem.totalTime}</p>
       """;
   }
 
