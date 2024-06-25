@@ -6,10 +6,16 @@ class TimesheetItem {
   final DateTime weekStarting;
   final double totalTime;
 
-  TimesheetItem({
-    required this.uniqueID,
-    required this.workItems,
-    required this.weekStarting,
-    required this.totalTime
-    });
+  TimesheetItem(
+      {required this.uniqueID,
+      required this.workItems,
+      required this.weekStarting,
+      required this.totalTime});
+
+  bool isValid() {
+    if (workItems.isEmpty) {
+      throw ArgumentError('workItems cannot be empty');
+    }
+    return true;
+  }
 }

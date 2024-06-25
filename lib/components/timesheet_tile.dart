@@ -22,8 +22,7 @@ class TimesheetTile extends StatefulWidget {
 class _TimesheetTileState extends State<TimesheetTile> {
   // variables
   final user = FirebaseAuth.instance.currentUser!;
-  final _key =
-      GlobalKey(); // may need to explicitly add GlobalKey type <ListTile>
+
 
 // get recipient email
   getEmailAddress() {
@@ -106,7 +105,6 @@ class _TimesheetTileState extends State<TimesheetTile> {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-        key: _key,
         textColor: Colors.white,
         title: Text(widget.uniqueID!),
         subtitle: Text('Week starting:  ${widget.weekStarting}'),
@@ -121,3 +119,18 @@ class _TimesheetTileState extends State<TimesheetTile> {
         ));
   }
 }
+
+// for testing purposes
+class MockTimesheetTileState extends _TimesheetTileState {
+  final Function(String recipient) mockSendEmail;
+
+  MockTimesheetTileState({required this.mockSendEmail});
+
+  @override
+  Future<void> sendEmail(String recipient) async {
+    return mockSendEmail(recipient); // Call the provided mock function
+  }
+}
+
+
+
